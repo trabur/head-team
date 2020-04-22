@@ -4,8 +4,20 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "bundle": "rollup index.js --format umd --name ht --file bundle.js"
   },
   "author": "",
-  "homepage": "https://metaheap.io"
+  "homepage": "https://metaheap.io",
+  "dependencies": {
+    "gulp": "^4.0.2",
+    "phoenix": "^1.5.0-rc.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.9.0",
+    "@babel/preset-env": "^7.9.5",
+    "babel-preset-es2015-rollup": "^3.0.0",
+    "gulp-babel": "^8.0.0-beta.2",
+    "rollup": "^2.7.1",
+    "rollup-plugin-babel": "^4.4.0"
+  }
 }
