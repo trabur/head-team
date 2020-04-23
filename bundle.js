@@ -1092,25 +1092,25 @@ var ht = (function (exports) {
 	exports.credentials = {}; // begin
 
 	function mobile() {
-	  console.log('enter mobile...');
+	  console.log('mobile: enter...');
 	  return new phoenix_1("wss://simple.fleetgrid.com/socket");
 	} // start
 
 	function lane(mobile, street) {
-	  console.log('transporting...');
+	  console.log('lane: transporting...');
 	  mobile.connect();
 	  var road = mobile.channel("SFM", {});
 	  road.join().receive("ok", function (resp) {
-	    console.log("yielding ramp SFM...", resp);
+	    console.log("lane: yielding ramp SFM...", resp);
 	    move(lane, street);
 	  }).receive("error", function (resp) {
-	    console.log("jammed ramp SFM...", resp);
+	    console.log("lane: jammed ramp SFM...", resp);
 	  });
 	  return road;
 	} // boot
 
 	function move(lane, streetId) {
-	  console.log('moving...');
+	  console.log("move: ".concat(streetId));
 	  lane.on && lane.on("room:".concat(streetId), function (msg) {
 	    msg.log ? console.log(msg.log) : null;
 	    msg.alert ? alert(msg.alert) : null;
@@ -1141,19 +1141,19 @@ var ht = (function (exports) {
 	} // shutdown
 
 	function park(mobile, lane, streetId) {
-	  console.log('parking...');
+	  console.log("park: ".concat(mobile));
 
 	  if (lane) {
 	    lane.off("room:".concat(streetId));
 	    lane.leave().receive("ok", function () {
-	      return console.log("exit street... ok");
+	      return console.log("park: exit street... ok");
 	    });
 	  }
 
 	  if (mobile) {
 	    mobile.off("SFM");
 	    mobile.disconnect(function () {
-	      return console.log("park mobile... ok");
+	      return console.log("park: halt mobile... ok");
 	    });
 	  }
 	} // pass

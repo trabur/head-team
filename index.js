@@ -16,7 +16,7 @@ export let credentials = {}
 
 // begin
 export function mobile() {
-  console.log('enter mobile...')
+  console.log('mobile: enter...')
   return new Socket(`wss://simple.fleetgrid.com/socket`)
 }
 
@@ -38,7 +38,7 @@ export function lane(mobile, street) {
 
 // boot
 export function move(lane, streetId) {
-  console.log('moving...')
+  console.log(`move: ${streetId}`)
   lane.on && lane.on(`room:${streetId}`, msg => {
     msg.log ? console.log(msg.log) : null;
     msg.alert ? alert(msg.alert) : null;
@@ -69,14 +69,14 @@ export function move(lane, streetId) {
 
 // shutdown
 export function park(mobile, lane, streetId) {
-  console.log('parking...')
+  console.log(`park: ${mobile}`)
   if (lane) {
     lane.off(`room:${streetId}`)
     lane.leave().receive("ok", () => console.log("park: exit street... ok"))
   }
   if (mobile) {
     mobile.off("SFM")
-    mobile.disconnect(() => console.log("lane: halt mobile... ok"))
+    mobile.disconnect(() => console.log("park: halt mobile... ok"))
   }
 }
 
