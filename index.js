@@ -22,16 +22,16 @@ export function mobile() {
 
 // start
 export function lane(mobile, street) {
-  console.log('transporting...')
+  console.log('lane: transporting...')
   mobile.connect()
   let road = mobile.channel(`SFM`, {})
   
   road.join()
     .receive("ok", resp => {
-      console.log("yielding ramp SFM...", resp)
+      console.log("lane: yielding ramp SFM...", resp)
       move(lane, street)
     })
-    .receive("error", resp => { console.log("jammed ramp SFM...", resp) })
+    .receive("error", resp => { console.log("lane: jammed ramp SFM...", resp) })
   
   return road
 }
@@ -72,11 +72,11 @@ export function park(mobile, lane, streetId) {
   console.log('parking...')
   if (lane) {
     lane.off(`room:${streetId}`)
-    lane.leave().receive("ok", () => console.log("exit street... ok"))
+    lane.leave().receive("ok", () => console.log("park: exit street... ok"))
   }
   if (mobile) {
     mobile.off("SFM")
-    mobile.disconnect(() => console.log("park mobile... ok"))
+    mobile.disconnect(() => console.log("lane: halt mobile... ok"))
   }
 }
 
