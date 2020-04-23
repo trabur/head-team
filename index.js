@@ -14,8 +14,31 @@ import { Socket } from 'phoenix'
 export let messages = {}
 export let credentials = {}
 
+// begin
+export function mobile() {
+  console.log('enter mobile...')
+  return new Socket(`wss://simple.fleetgrid.com/socket`)
+}
+
+// start
+export function ramp(mobile, street) {
+  console.log('accessing ramp...')
+  let lane = mobile.channel(`SFM`, {})
+  lane.connect()
+  
+  lane.join()
+    .receive("ok", resp => {
+      console.log("yielding ramp SFM...", resp)
+      space(lane, street)
+    })
+    .receive("error", resp => { console.log("jammed ramp SFM...", resp) })
+  
+  return lane
+}
+
 // boot
 export function space(lane, streetId) {
+  console.log('spacing...')
   lane.on && lane.on(`room:${streetId}`, msg => {
     msg.log ? console.log(msg.log) : null;
     msg.alert ? alert(msg.alert) : null;
@@ -44,29 +67,9 @@ export function space(lane, streetId) {
   return lane
 }
 
-// begin
-export function mobile() {
-  return new Socket(`wss://simple.fleetgrid.com/socket`)
-}
-
-// start
-export function ramp(mobile, street) {
-  let lane = mobile.channel(`SFM`, {})
-  lane.connect()
-  
-  lane.join()
-    .receive("ok", resp => {
-      console.log("successfully joined SFM...", resp)
-      space(lane, street)
-    })
-    .receive("error", resp => { console.log("unable to join SFM...", resp) })
-  
-  return lane
-}
-
 // shutdown
 export function park(mobile, lane, streetId) {
-  console.log('park')
+  console.log('parking...')
   if (lane) {
     lane.off(`room:${streetId}`)
     lane.leave().receive("ok", () => console.log("exit street... ok"))
@@ -79,14 +82,14 @@ export function park(mobile, lane, streetId) {
 
 // pass
 export function register(lane, streetId, username, password) {
-  console.log('pass: ', username)
+  console.log('passing...', username)
   credentials = { username, password }
   lane.push('SFS:user_register', { room: streetId, username, password })
 }
 
 // ack
 export function login(lane, streetId, username, password) {
-  console.log('ack: ', username)
+  console.log('acking...', username)
   lane.push('SFS:user_login', { room: streetId, username, password })
 }
 
@@ -98,6 +101,6 @@ export let checkpoint = {
 
 // broadcast
 export function radio(lane, streetId, from, message) {
-  console.log('broadcast', message)
+  console.log('broadcasting...', message)
   lane.push(`room:broadcast`, { room: streetId, payload: { from, message }})
 }
