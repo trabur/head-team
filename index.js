@@ -21,24 +21,24 @@ export function mobile() {
 }
 
 // start
-export function ramp(mobile, street) {
-  console.log('accessing ramp...')
-  let lane = mobile.channel(`SFM`, {})
-  lane.connect()
+export function lane(mobile, street) {
+  console.log('transporting...')
+  mobile.connect()
+  let road = mobile.channel(`SFM`, {})
   
-  lane.join()
+  road.join()
     .receive("ok", resp => {
       console.log("yielding ramp SFM...", resp)
-      space(lane, street)
+      move(lane, street)
     })
     .receive("error", resp => { console.log("jammed ramp SFM...", resp) })
   
-  return lane
+  return road
 }
 
 // boot
-export function space(lane, streetId) {
-  console.log('spacing...')
+export function move(lane, streetId) {
+  console.log('moving...')
   lane.on && lane.on(`room:${streetId}`, msg => {
     msg.log ? console.log(msg.log) : null;
     msg.alert ? alert(msg.alert) : null;

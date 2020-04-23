@@ -1089,9 +1089,28 @@ var ht = (function (exports) {
 	 */
 
 	var messages = {};
-	exports.credentials = {}; // boot
+	exports.credentials = {}; // begin
 
-	function space(lane, streetId) {
+	function mobile() {
+	  console.log('enter mobile...');
+	  return new phoenix_1("wss://simple.fleetgrid.com/socket");
+	} // start
+
+	function lane(mobile, street) {
+	  console.log('transporting...');
+	  mobile.connect();
+	  var road = mobile.channel("SFM", {});
+	  road.join().receive("ok", function (resp) {
+	    console.log("yielding ramp SFM...", resp);
+	    move(lane, street);
+	  }).receive("error", function (resp) {
+	    console.log("jammed ramp SFM...", resp);
+	  });
+	  return road;
+	} // boot
+
+	function move(lane, streetId) {
+	  console.log('moving...');
 	  lane.on && lane.on("room:".concat(streetId), function (msg) {
 	    msg.log ? console.log(msg.log) : null;
 	    msg.alert ? alert(msg.alert) : null;
@@ -1119,26 +1138,10 @@ var ht = (function (exports) {
 	    }
 	  });
 	  return lane;
-	} // begin
-
-	function mobile() {
-	  return new phoenix_1("wss://simple.fleetgrid.com/socket");
-	} // start
-
-	function ramp(mobile, street) {
-	  var lane = mobile.channel("SFM", {});
-	  lane.connect();
-	  lane.join().receive("ok", function (resp) {
-	    console.log("successfully joined SFM...", resp);
-	    space(lane, street);
-	  }).receive("error", function (resp) {
-	    console.log("unable to join SFM...", resp);
-	  });
-	  return lane;
 	} // shutdown
 
 	function park(mobile, lane, streetId) {
-	  console.log('park');
+	  console.log('parking...');
 
 	  if (lane) {
 	    lane.off("room:".concat(streetId));
@@ -1156,7 +1159,7 @@ var ht = (function (exports) {
 	} // pass
 
 	function register(lane, streetId, username, password) {
-	  console.log('pass: ', username);
+	  console.log('passing...', username);
 	  exports.credentials = {
 	    username: username,
 	    password: password
@@ -1169,7 +1172,7 @@ var ht = (function (exports) {
 	} // ack
 
 	function login(lane, streetId, username, password) {
-	  console.log('ack: ', username);
+	  console.log('acking...', username);
 	  lane.push('SFS:user_login', {
 	    room: streetId,
 	    username: username,
@@ -1183,7 +1186,7 @@ var ht = (function (exports) {
 	}; // broadcast
 
 	function radio(lane, streetId, from, message) {
-	  console.log('broadcast', message);
+	  console.log('broadcasting...', message);
 	  lane.push("room:broadcast", {
 	    room: streetId,
 	    payload: {
@@ -1194,14 +1197,14 @@ var ht = (function (exports) {
 	}
 
 	exports.checkpoint = checkpoint;
+	exports.lane = lane;
 	exports.login = login;
 	exports.messages = messages;
 	exports.mobile = mobile;
+	exports.move = move;
 	exports.park = park;
 	exports.radio = radio;
-	exports.ramp = ramp;
 	exports.register = register;
-	exports.space = space;
 
 	return exports;
 
