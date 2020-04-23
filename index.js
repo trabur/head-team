@@ -28,10 +28,10 @@ export function lane(mobile, street) {
   
   road.join()
     .receive("ok", resp => {
-      console.log("lane: yielding ramp SFM...", resp)
+      console.log("lane: yield on SFM...", resp)
       move(lane, street)
     })
-    .receive("error", resp => { console.log("lane: jammed ramp SFM...", resp) })
+    .receive("error", resp => { console.log("lane: jam on SFM...", resp) })
   
   return road
 }
