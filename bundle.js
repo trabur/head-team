@@ -1089,12 +1089,12 @@ var ht = (function (exports) {
 	 */
 
 	var messages = {};
-	exports.credentials = {}; // broadcast
+	exports.credentials = {}; // PING
 
 	function beep(transport) {
-	  console.log("beep: ".concat(transport.street));
-	  transport.road.push("SFS:ping", {
-	    room: transport.street
+	  console.log("beep: ".concat(transport.streetId));
+	  transport.lane.push("SFS:ping", {
+	    room: transport.streetId
 	  });
 	} // begin
 
@@ -1103,25 +1103,26 @@ var ht = (function (exports) {
 	  return new phoenix_1("wss://simple.fleetgrid.com/socket");
 	} // start
 
-	function lane(mobile, street) {
+	function lane(mobile, streetId) {
 	  console.log('lane: transporting...');
 	  mobile.connect();
-	  var road = mobile.channel("SFM", {});
-	  road.join().receive("ok", function (resp) {
+	  var l = mobile.channel("SFM", {});
+	  l.join().receive("ok", function (resp) {
 	    console.log("lane: yield on SFM...", resp);
-	    move(lane, street);
 	  }).receive("error", function (resp) {
 	    console.log("lane: jam on SFM...", resp);
 	  });
 	  return {
-	    road: road,
-	    street: street
+	    lane: l,
+	    streetId: streetId
 	  };
-	} // boot
+	} // listen to events being returned
 
-	function move(lane, streetId) {
-	  console.log("move: ".concat(streetId));
-	  lane.on && lane.on("room:".concat(streetId), function (msg) {
+	function listen(_ref) {
+	  var lane = _ref.lane,
+	      streetId = _ref.streetId;
+	  console.log("listen: ".concat(streetId));
+	  lane && lane.on("room:".concat(streetId), function (msg) {
 	    msg.log ? console.log(msg.log) : null;
 	    msg.alert ? alert(msg.alert) : null;
 
@@ -1131,7 +1132,8 @@ var ht = (function (exports) {
 
 	    switch (msg.topic) {
 	      case 'SFS:ping':
-	        console.log('SFS:ping', msg);
+	        // console.log('SFS:ping', msg)
+	        console.log('beep: HONK');
 	        break;
 
 	      case 'SFS:user_login':
@@ -1144,10 +1146,6 @@ var ht = (function (exports) {
 	        console.log('SFS:user_register', msg);
 	        login(lane, streetId, exports.credentials.username, exports.credentials.password);
 	        exports.credentials = {};
-	        break;
-
-	      default:
-	        console.log('hotfix or coldbreak', msg.topic);
 	        break;
 	    }
 	  });
@@ -1200,7 +1198,7 @@ var ht = (function (exports) {
 	}; // broadcast
 
 	function radio(lane, streetId, from, message) {
-	  console.log('broadcasting...', message);
+	  console.log("radio: ".concat(message));
 	  lane.push("room:broadcast", {
 	    room: streetId,
 	    payload: {
@@ -1213,10 +1211,10 @@ var ht = (function (exports) {
 	exports.beep = beep;
 	exports.checkpoint = checkpoint;
 	exports.lane = lane;
+	exports.listen = listen;
 	exports.login = login;
 	exports.messages = messages;
 	exports.mobile = mobile;
-	exports.move = move;
 	exports.park = park;
 	exports.radio = radio;
 	exports.register = register;

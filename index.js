@@ -14,38 +14,37 @@ import { Socket } from 'phoenix'
 export let messages = {}
 export let credentials = {}
 
-// PING
+// PING/PONG
 export function beep(transport) {
-  console.log(`beep: ${transport.street}`)
-  transport.road.push(`SFS:ping`, { room: transport.street })
+  console.log(`beep: ${transport.streetId}`)
+  transport.lane.push(`SFS:ping`, { room: transport.streetId })
 }
 
-// begin
+// begin socket
 export function mobile() {
   console.log('mobile: enter...')
   return new Socket(`wss://simple.fleetgrid.com/socket`)
 }
 
-// start
-export function lane(mobile, street) {
+// start channel
+export function lane(mobile, streetId) {
   console.log('lane: transporting...')
   mobile.connect()
-  let road = mobile.channel(`SFM`, {})
+  let l = mobile.channel(`SFM`, {})
   
-  road.join()
+  l.join()
     .receive("ok", resp => {
       console.log("lane: yield on SFM...", resp)
-      move(lane, street)
     })
     .receive("error", resp => { console.log("lane: jam on SFM...", resp) })
   
-  return { road, street }
+  return { lane: l, streetId }
 }
 
-// boot
-export function move(lane, streetId) {
-  console.log(`move: ${streetId}`)
-  lane.on && lane.on(`room:${streetId}`, msg => {
+// listen to events being returned
+export function listen({ lane, streetId }) {
+  console.log(`listen: ${streetId}`)
+  lane && lane.on(`room:${streetId}`, msg => {
     msg.log ? console.log(msg.log) : null;
     msg.alert ? alert(msg.alert) : null;
 
@@ -55,7 +54,8 @@ export function move(lane, streetId) {
 
     switch (msg.topic) {
       case 'SFS:ping':
-        console.log('SFS:ping', msg)
+        // console.log('SFS:ping', msg)
+        console.log('beep: HONK')
         break;
       case 'SFS:user_login':
         console.log('SFS:user_login', msg)
@@ -68,7 +68,7 @@ export function move(lane, streetId) {
         credentials = {}
         break;
       default:
-        console.log('hotfix or coldbreak', msg.topic)
+        // console.log('hotfix or coldbreak', msg.topic)
         break;
     }
   })
@@ -76,7 +76,7 @@ export function move(lane, streetId) {
   return lane
 }
 
-// shutdown
+// shutdown / unlisten
 export function park(mobile, lane, streetId) {
   console.log(`park: ${mobile}`)
   if (lane) {
