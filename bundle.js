@@ -1101,10 +1101,10 @@ var ht = (function (exports) {
 	  mobile.connect();
 	  var road = mobile.channel("SFM", {});
 	  road.join().receive("ok", function (resp) {
-	    console.log("lane: yielding ramp SFM...", resp);
+	    console.log("lane: yield on SFM...", resp);
 	    move(lane, street);
 	  }).receive("error", function (resp) {
-	    console.log("lane: jammed ramp SFM...", resp);
+	    console.log("lane: jam on SFM...", resp);
 	  });
 	  return road;
 	} // boot
