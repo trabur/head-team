@@ -1089,7 +1089,14 @@ var ht = (function (exports) {
 	 */
 
 	var messages = {};
-	exports.credentials = {}; // begin
+	exports.credentials = {}; // broadcast
+
+	function beep(transport) {
+	  console.log("beep: ".concat(transport.street));
+	  transport.road.push("SFS:ping", {
+	    room: transport.street
+	  });
+	} // begin
 
 	function mobile() {
 	  console.log('mobile: enter...');
@@ -1106,7 +1113,10 @@ var ht = (function (exports) {
 	  }).receive("error", function (resp) {
 	    console.log("lane: jam on SFM...", resp);
 	  });
-	  return road;
+	  return {
+	    road: road,
+	    street: street
+	  };
 	} // boot
 
 	function move(lane, streetId) {
@@ -1120,6 +1130,10 @@ var ht = (function (exports) {
 	    }
 
 	    switch (msg.topic) {
+	      case 'SFS:ping':
+	        console.log('SFS:ping', msg);
+	        break;
+
 	      case 'SFS:user_login':
 	        console.log('SFS:user_login', msg);
 	        localStorage.setItem('token', msg.token); // window.location = `/accounts/${msg.username}`
@@ -1196,6 +1210,7 @@ var ht = (function (exports) {
 	  });
 	}
 
+	exports.beep = beep;
 	exports.checkpoint = checkpoint;
 	exports.lane = lane;
 	exports.login = login;

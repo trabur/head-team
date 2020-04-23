@@ -14,6 +14,12 @@ import { Socket } from 'phoenix'
 export let messages = {}
 export let credentials = {}
 
+// PING
+export function beep(transport) {
+  console.log(`beep: ${transport.street}`)
+  transport.road.push(`SFS:ping`, { room: transport.street })
+}
+
 // begin
 export function mobile() {
   console.log('mobile: enter...')
@@ -33,7 +39,7 @@ export function lane(mobile, street) {
     })
     .receive("error", resp => { console.log("lane: jam on SFM...", resp) })
   
-  return road
+  return { road, street }
 }
 
 // boot
@@ -48,6 +54,9 @@ export function move(lane, streetId) {
     }
 
     switch (msg.topic) {
+      case 'SFS:ping':
+        console.log('SFS:ping', msg)
+        break;
       case 'SFS:user_login':
         console.log('SFS:user_login', msg)
         localStorage.setItem('token', msg.token)
@@ -101,6 +110,6 @@ export let checkpoint = {
 
 // broadcast
 export function radio(lane, streetId, from, message) {
-  console.log('broadcasting...', message)
+  console.log(`radio: ${message}`)
   lane.push(`room:broadcast`, { room: streetId, payload: { from, message }})
 }
