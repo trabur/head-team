@@ -1,6 +1,8 @@
 <html>
   <head>
     <title>M E T A H E A P</title>
+    <link href="themes/prism.css" rel="stylesheet" />
+    <script src="libs/prism.js"></script>
   </head>
   <body style="margin: 0; color: #333; font-family: sans-serif; overflow: hidden;">
     <div style="max-width: 800px; margin: 0 auto; background: #eee; height: 100%; padding: 0 1em; position: relative; overflow: auto;">
@@ -11,25 +13,23 @@
         <h2 style="text-align: center;">METAHEAP</h2>
       </div>
       <h1 style="text-align: center;">FORWARD :)</h1>
-      <div style="margin: 0 auto; width: inherit;">
-        <h1 style="line-height: 0.2em; font-family: monospace;">-->HTMETAHEAP</h1>
-        <h1 style="line-height: 0.2em; font-family: monospace;">==>EEHEADTEAM</h1>
-        <h1 style="line-height: 0.2em; font-family: monospace;">==>AA</h1>
-        <h1 style="line-height: 0.2em; font-family: monospace;">-->DM</h1>
-      </div>
+      <pre><code class="language-md">--> HTMETAHEAP
+--> EEHEADTEAM
+--> AA
+--> DM</code></pre>
       <h2>this project is a library, called HT, for accessing <a href="https://simple.fleetgrid.com/" target="_blank">simple.fleetgrid.com</a>'s database commands. starting as a library for HTML projects the base API is programmed in JS. however, because messages are transmitted between FG and HT over the standard "ws://" WebSocket protocol ... there is nothing to stop anyone from using this --> WS backend with other languages (Swift, Java, C#, etc...).</h2>
       <h2>the infrastructure around FLEETGRID is built for supporting massive amounts of vehicles. at full speed ahead scale! FG is capable of handling traffic, geospacial, routing, and field service. it doesn't leave out the solo-driver or small-to-medium size teams either. it does all this exceptionally well.</h2>
       <h2>with FG as a bases for HT's simple database library a world of possibilities beigns to unfold. checkout the game // <a href="https://tyu67.com">tyu67.com</a> which showcases HT's ability to support objects ... in a sort of "faster than real-time" way and it's --> quite impressive.</h2>
       <h2>application programming interface:</h2>
       <ul style="font-size: 1.8em; font-family: monospace;">
         <li><a href="/ht.beep.html">ht.beep()</a></li><!-- honk -->
-        <li><a href="/ht.drive.set.html">ht.turn()</a></li><!-- left <-> right -->
-        <li><a href="/ht.neutral.get.html">ht.neutral.get()</a></li>
-        <li><a href="/ht.neutral.set.html">ht.neutral.set()</a></li>
+        <li><a href="/ht.turn.html">ht.turn()</a></li><!-- left <-> right -->
+        <li><a href="/ht.highway.get.html">ht.highway.get()</a></li>
+        <li><a href="/ht.highway.set.html">ht.highway.set()</a></li>
         <li><a href="/ht.checkpoint.pass.html">ht.checkpoint.pass()</a></li>
         <li><a href="/ht.checkpoint.ack.html">ht.checkpoint.ack()</a></li>
-        <li><a href="/ht.drive.get.html">ht.drive.get()</a></li>
-        <li><a href="/ht.drive.set.html">ht.drive.set()</a></li>
+        <li><a href="/ht.driveway.get.html">ht.driveway.get()</a></li>
+        <li><a href="/ht.driveway.set.html">ht.driveway.set()</a></li>
       </ul>
       <h1 style="text-align: center;"><a href="https://dimension.click">UPWARD</a> (:</h1>
       <div style="border-top: 5px dashed;">
