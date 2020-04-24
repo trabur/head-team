@@ -13,50 +13,65 @@ import { Socket } from 'phoenix'
  */
 export let messages = {}
 export let credentials = {}
+export let licensePlates = [
+  {
+    id: null,
+    socket: null,
+    channel: null,
+    streetId: null
+  }
+]
 
 // PING/PONG
 export function beep(transport) {
   console.log(`beep: ${transport.streetId}`)
-  transport.lane.push(`SFS:ping`, { room: transport.streetId })
+  transport.channel.push(`SFS:ping`, { room: transport.streetId })
 }
 
 // begin socket
-export function mobile() {
+export function mobile(plateId) {
   console.log('mobile: enter...')
-  return new Socket(`wss://simple.fleetgrid.com/socket`)
+  let lp = {
+    id: plateId,
+    socket: new Socket(`wss://simple.fleetgrid.com/socket`)
+  }
+  licensePlates.push(lp)
+  return lp
 }
 
-// start channel
+// lane and channel are both same here
 export function lane(mobile, streetId) {
   console.log('lane: transporting...')
   mobile.connect()
-  let l = mobile.channel(`SFM`, {})
+  let chan = mobile.channel(`SFM`, {})
   
-  l.join()
+  chan.join()
     .receive("ok", resp => {
       console.log("lane: yield on SFM...", resp)
     })
     .receive("error", resp => { console.log("lane: jam on SFM...", resp) })
+
+  listen({ channel: chan, streetId })
+
+
   
-  return { lane: l, streetId }
+  return { channel: chan, streetId }
 }
 
 // change lanes by turning
 export function turn(transport, streetId) {
   // exit
   console.log(`turn: exit ${transport.streetId}`)
-  exit(transport.lane, transport.streetId)
+  exit(transport.channel, transport.streetId)
   // enter
   console.log(`turn: enter ${streetId}`)
-  let laneChange = listen({ lane: transport.lane, streetId })
-
-  return { lane: laneChange, streetId }
+  listen({ channel: transport.channel, streetId })
 }
 
 // listen to events being returned
-export function listen({ lane, streetId }) {
+export function listen({ channel, streetId }) {
   console.log(`listen: ${streetId}`)
-  lane && lane.on(`room:${streetId}`, msg => {
+  channel && channel.on(`room:${streetId}`, msg => {
     msg.log ? console.log(msg.log) : null;
     msg.alert ? alert(msg.alert) : null;
 
@@ -76,7 +91,7 @@ export function listen({ lane, streetId }) {
         break;
       case 'SFS:user_register':
         console.log('SFS:user_register', msg)
-        login(lane, streetId, credentials.username, credentials.password)
+        login(channel, streetId, credentials.username, credentials.password)
         credentials = {}
         break;
       default:
@@ -84,16 +99,14 @@ export function listen({ lane, streetId }) {
         break;
     }
   })
-
-  return lane
 }
 
 // shutdown / unlisten
-export function park(mobile, lane, streetId) {
+export function park(mobile, channel, streetId) {
   console.log(`park: ${mobile}`)
-  if (lane) {
-    lane.off(`room:${streetId}`)
-    lane.leave().receive("ok", () => console.log("park: exit street... ok"))
+  if (channel) {
+    channel.off(`room:${streetId}`)
+    channel.leave().receive("ok", () => console.log("park: exit street... ok"))
   }
   if (mobile) {
     mobile.off("SFM")
@@ -102,22 +115,22 @@ export function park(mobile, lane, streetId) {
 }
 
 // exit lane
-export function exit(lane, streetId) {
-  lane.off(`room:${streetId}`)
-  lane.leave().receive("ok", () => console.log("exit: leave lane... ok"))
+export function exit(channel, streetId) {
+  channel.off(`room:${streetId}`)
+  channel.leave().receive("ok", () => console.log("exit: leave lane... ok"))
 }
 
 // pass
-export function register({ lane, streetId }, username, password) {
+export function register({ channel, streetId }, username, password) {
   console.log(`checkpoint.pass: register ${username}`)
   credentials = { username, password }
-  lane.push('SFS:user_register', { room: streetId, username, password })
+  channel.push('SFS:user_register', { room: streetId, username, password })
 }
 
 // ack
-export function login({ lane, streetId }, username, password) {
+export function login({ channel, streetId }, username, password) {
   console.log(`checkpoint.ack: login ${username}`)
-  lane.push('SFS:user_login', { room: streetId, username, password })
+  channel.push('SFS:user_login', { room: streetId, username, password })
 }
 
 // authentication
@@ -127,9 +140,9 @@ export let checkpoint = {
 }
 
 // broadcast
-export function radio({ lane, streetId }, from, message) {
+export function radio({ channel, streetId }, from, message) {
   console.log(`radio: ${message}`)
-  lane.push(`room:broadcast`, { room: streetId, payload: { from, message }})
+  channel.push(`room:broadcast`, { room: streetId, payload: { from, message }})
 }
 
 // turn confusion

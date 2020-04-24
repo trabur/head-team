@@ -1093,7 +1093,7 @@ var ht = (function (exports) {
 
 	function beep(transport) {
 	  console.log("beep: ".concat(transport.streetId));
-	  transport.lane.push("SFS:ping", {
+	  transport.channel.push("SFS:ping", {
 	    room: transport.streetId
 	  });
 	} // begin socket
@@ -1101,19 +1101,23 @@ var ht = (function (exports) {
 	function mobile() {
 	  console.log('mobile: enter...');
 	  return new phoenix_1("wss://simple.fleetgrid.com/socket");
-	} // start channel
+	} // lane and channel are both same here
 
 	function lane(mobile, streetId) {
 	  console.log('lane: transporting...');
 	  mobile.connect();
-	  var l = mobile.channel("SFM", {});
-	  l.join().receive("ok", function (resp) {
+	  var chan = mobile.channel("SFM", {});
+	  chan.join().receive("ok", function (resp) {
 	    console.log("lane: yield on SFM...", resp);
 	  }).receive("error", function (resp) {
 	    console.log("lane: jam on SFM...", resp);
 	  });
+	  listen({
+	    channel: chan,
+	    streetId: streetId
+	  });
 	  return {
-	    lane: l,
+	    channel: chan,
 	    streetId: streetId
 	  };
 	} // change lanes by turning
@@ -1121,24 +1125,20 @@ var ht = (function (exports) {
 	function turn(transport, streetId) {
 	  // exit
 	  console.log("turn: exit ".concat(transport.streetId));
-	  exit(transport.lane, transport.streetId); // enter
+	  exit(transport.channel, transport.streetId); // enter
 
 	  console.log("turn: enter ".concat(streetId));
-	  var laneChange = listen({
-	    lane: transport.lane,
+	  listen({
+	    channel: transport.channel,
 	    streetId: streetId
 	  });
-	  return {
-	    lane: laneChange,
-	    streetId: streetId
-	  };
 	} // listen to events being returned
 
 	function listen(_ref) {
-	  var lane = _ref.lane,
+	  var channel = _ref.channel,
 	      streetId = _ref.streetId;
 	  console.log("listen: ".concat(streetId));
-	  lane && lane.on("room:".concat(streetId), function (msg) {
+	  channel && channel.on("room:".concat(streetId), function (msg) {
 	    msg.log ? console.log(msg.log) : null;
 	    msg.alert ? alert(msg.alert) : null;
 
@@ -1160,20 +1160,19 @@ var ht = (function (exports) {
 
 	      case 'SFS:user_register':
 	        console.log('SFS:user_register', msg);
-	        login(lane, streetId, exports.credentials.username, exports.credentials.password);
+	        login(channel, streetId, exports.credentials.username, exports.credentials.password);
 	        exports.credentials = {};
 	        break;
 	    }
 	  });
-	  return lane;
 	} // shutdown / unlisten
 
-	function park(mobile, lane, streetId) {
+	function park(mobile, channel, streetId) {
 	  console.log("park: ".concat(mobile));
 
-	  if (lane) {
-	    lane.off("room:".concat(streetId));
-	    lane.leave().receive("ok", function () {
+	  if (channel) {
+	    channel.off("room:".concat(streetId));
+	    channel.leave().receive("ok", function () {
 	      return console.log("park: exit street... ok");
 	    });
 	  }
@@ -1186,22 +1185,22 @@ var ht = (function (exports) {
 	  }
 	} // exit lane
 
-	function exit(lane, streetId) {
-	  lane.off("room:".concat(streetId));
-	  lane.leave().receive("ok", function () {
+	function exit(channel, streetId) {
+	  channel.off("room:".concat(streetId));
+	  channel.leave().receive("ok", function () {
 	    return console.log("exit: leave lane... ok");
 	  });
 	} // pass
 
 	function register(_ref2, username, password) {
-	  var lane = _ref2.lane,
+	  var channel = _ref2.channel,
 	      streetId = _ref2.streetId;
-	  console.log('passing...', username);
+	  console.log("checkpoint.pass: register ".concat(username));
 	  exports.credentials = {
 	    username: username,
 	    password: password
 	  };
-	  lane.push('SFS:user_register', {
+	  channel.push('SFS:user_register', {
 	    room: streetId,
 	    username: username,
 	    password: password
@@ -1209,10 +1208,10 @@ var ht = (function (exports) {
 	} // ack
 
 	function login(_ref3, username, password) {
-	  var lane = _ref3.lane,
+	  var channel = _ref3.channel,
 	      streetId = _ref3.streetId;
-	  console.log('acking...', username);
-	  lane.push('SFS:user_login', {
+	  console.log("checkpoint.ack: login ".concat(username));
+	  channel.push('SFS:user_login', {
 	    room: streetId,
 	    username: username,
 	    password: password
@@ -1225,10 +1224,10 @@ var ht = (function (exports) {
 	}; // broadcast
 
 	function radio(_ref4, from, message) {
-	  var lane = _ref4.lane,
+	  var channel = _ref4.channel,
 	      streetId = _ref4.streetId;
 	  console.log("radio: ".concat(message));
-	  lane.push("room:broadcast", {
+	  channel.push("room:broadcast", {
 	    room: streetId,
 	    payload: {
 	      from: from,
