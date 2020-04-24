@@ -1089,19 +1089,19 @@ var ht = (function (exports) {
 	 */
 
 	var messages = {};
-	exports.credentials = {}; // PING
+	exports.credentials = {}; // PING/PONG
 
 	function beep(transport) {
 	  console.log("beep: ".concat(transport.streetId));
 	  transport.lane.push("SFS:ping", {
 	    room: transport.streetId
 	  });
-	} // begin
+	} // begin socket
 
 	function mobile() {
 	  console.log('mobile: enter...');
 	  return new phoenix_1("wss://simple.fleetgrid.com/socket");
-	} // start
+	} // start channel
 
 	function lane(mobile, streetId) {
 	  console.log('lane: transporting...');
@@ -1114,6 +1114,22 @@ var ht = (function (exports) {
 	  });
 	  return {
 	    lane: l,
+	    streetId: streetId
+	  };
+	} // change lanes by turning
+
+	function turn(transport, streetId) {
+	  // exit
+	  console.log("turn: exit ".concat(transport.streetId));
+	  exit(transport.lane, transport.streetId); // enter
+
+	  console.log("turn: enter ".concat(streetId));
+	  var laneChange = listen({
+	    lane: transport.lane,
+	    streetId: streetId
+	  });
+	  return {
+	    lane: laneChange,
 	    streetId: streetId
 	  };
 	} // listen to events being returned
@@ -1150,7 +1166,7 @@ var ht = (function (exports) {
 	    }
 	  });
 	  return lane;
-	} // shutdown
+	} // shutdown / unlisten
 
 	function park(mobile, lane, streetId) {
 	  console.log("park: ".concat(mobile));
@@ -1168,9 +1184,18 @@ var ht = (function (exports) {
 	      return console.log("park: halt mobile... ok");
 	    });
 	  }
+	} // exit lane
+
+	function exit(lane, streetId) {
+	  lane.off("room:".concat(streetId));
+	  lane.leave().receive("ok", function () {
+	    return console.log("exit: leave lane... ok");
+	  });
 	} // pass
 
-	function register(lane, streetId, username, password) {
+	function register(_ref2, username, password) {
+	  var lane = _ref2.lane,
+	      streetId = _ref2.streetId;
 	  console.log('passing...', username);
 	  exports.credentials = {
 	    username: username,
@@ -1183,7 +1208,9 @@ var ht = (function (exports) {
 	  });
 	} // ack
 
-	function login(lane, streetId, username, password) {
+	function login(_ref3, username, password) {
+	  var lane = _ref3.lane,
+	      streetId = _ref3.streetId;
 	  console.log('acking...', username);
 	  lane.push('SFS:user_login', {
 	    room: streetId,
@@ -1197,7 +1224,9 @@ var ht = (function (exports) {
 	  ack: login
 	}; // broadcast
 
-	function radio(lane, streetId, from, message) {
+	function radio(_ref4, from, message) {
+	  var lane = _ref4.lane,
+	      streetId = _ref4.streetId;
 	  console.log("radio: ".concat(message));
 	  lane.push("room:broadcast", {
 	    room: streetId,
@@ -1206,10 +1235,21 @@ var ht = (function (exports) {
 	      message: message
 	    }
 	  });
+	} // turn confusion
+
+	function secret(length, array) {
+	  var TCP = '';
+
+	  for (var i = length; i > 0; i--) {
+	    TCP += array[Math.floor(Math.random() * array.length)];
+	  }
+
+	  return TCP;
 	}
 
 	exports.beep = beep;
 	exports.checkpoint = checkpoint;
+	exports.exit = exit;
 	exports.lane = lane;
 	exports.listen = listen;
 	exports.login = login;
@@ -1218,6 +1258,8 @@ var ht = (function (exports) {
 	exports.park = park;
 	exports.radio = radio;
 	exports.register = register;
+	exports.secret = secret;
+	exports.turn = turn;
 
 	return exports;
 

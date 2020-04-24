@@ -41,6 +41,18 @@ export function lane(mobile, streetId) {
   return { lane: l, streetId }
 }
 
+// change lanes by turning
+export function turn(transport, streetId) {
+  // exit
+  console.log(`turn: exit ${transport.streetId}`)
+  exit(transport.lane, transport.streetId)
+  // enter
+  console.log(`turn: enter ${streetId}`)
+  let laneChange = listen({ lane: transport.lane, streetId })
+
+  return { lane: laneChange, streetId }
+}
+
 // listen to events being returned
 export function listen({ lane, streetId }) {
   console.log(`listen: ${streetId}`)
@@ -89,16 +101,22 @@ export function park(mobile, lane, streetId) {
   }
 }
 
+// exit lane
+export function exit(lane, streetId) {
+  lane.off(`room:${streetId}`)
+  lane.leave().receive("ok", () => console.log("exit: leave lane... ok"))
+}
+
 // pass
-export function register(lane, streetId, username, password) {
-  console.log('passing...', username)
+export function register({ lane, streetId }, username, password) {
+  console.log(`checkpoint.pass: register ${username}`)
   credentials = { username, password }
   lane.push('SFS:user_register', { room: streetId, username, password })
 }
 
 // ack
-export function login(lane, streetId, username, password) {
-  console.log('acking...', username)
+export function login({ lane, streetId }, username, password) {
+  console.log(`checkpoint.ack: login ${username}`)
   lane.push('SFS:user_login', { room: streetId, username, password })
 }
 
@@ -109,7 +127,16 @@ export let checkpoint = {
 }
 
 // broadcast
-export function radio(lane, streetId, from, message) {
+export function radio({ lane, streetId }, from, message) {
   console.log(`radio: ${message}`)
   lane.push(`room:broadcast`, { room: streetId, payload: { from, message }})
+}
+
+// turn confusion
+export function secret(length, array) { 
+  let TCP = ''
+  for (let i = length; i > 0; i--) { 
+    TCP += array[Math.floor(Math.random() * array.length)]
+  }
+  return TCP
 }
