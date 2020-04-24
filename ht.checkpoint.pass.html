@@ -1,0 +1,49 @@
+<html>
+  <head>
+    <title>ht.beep()</title>
+    <link href="themes/prism.css" rel="stylesheet" />
+    <script src="libs/prism.js"></script>
+    <script src="bundle.js"></script>
+  </head>
+  <body style="margin: 0; color: #333; font-family: sans-serif; overflow: hidden;">
+    <div style="max-width: 800px; margin: 0 auto; background: #eee; height: 100%; padding: 0 1em; position: relative; overflow: auto;">
+      <br />
+      <br />
+      <br />
+      <div style="border-bottom: 5px dashed;">
+        <h2 style="text-align: center;">METAHEAP</h2>
+      </div>
+      <h1 style="text-align: center;">ht.checkpoint.pass()</h1>
+      <h2>a driver rotates the bottom of the steering wheel left ... every one shifts --> right (: a driver rotates the bottom of the steering wheel right ... every one shifts <-- left :)</h2>
+      <h2>simple turn by turn layering by only DECODING then ENCODING means two people in the same vehicle can navigate a distributed graph while maintaining communication with one another while also being sealed off from the outside world.</h2>
+<pre><code class="language-md">FIRST --> SECOND --> THIRD ... BEEP</code></pre>
+<pre><code class="language-js">let first = "1st Street" // road
+let second = "2nd Street" // road
+let third = "3rd Street" // road
+let vehicle = ht.mobile()
+let transportA = ht.lane(vehicle, first)
+let transportB = ht.turn(transportA, second)
+let transportC = ht.turn(transportB, third)
+let hear = ht.listen(transportC)
+let noise = ht.beep(transportC)
+</code></pre>
+<pre><code class="language-js">// mobile: enter...
+// lane: transporting...
+// lane: yield on SFM...
+// turn: towards 2nd Street
+// turn: towards 3nd Street
+// listen: 3nd Street
+// beep: HONK
+</code></pre>
+      <h2>many things start out as 2 which is why it's just exmaple code. meaning, we could have gone big and used an example of a bunch of people on a bus; or we could have gone local and used an example of 1-4 people in a car.</h2>
+      <h2>what is important to note is this ... with the ability to TURN --> and the ability to HONK // we now have the ability to share secrets between one another using standard PASS & ACK protocols.</h2>
+      <h1 style="text-align: center;"><a href="/">UPWARD</a> :)</h1>
+      <div style="border-top: 5px dashed;">
+        <h2 style="text-align: center;">METAHEAP</h2>
+      </div>
+      <br />
+      <br />
+      <br />
+    </div>
+  </body>
+</html>
