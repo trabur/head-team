@@ -1126,7 +1126,7 @@ var ht = (function (exports) {
 	} // begin socket
 
 	function mobile(plateId) {
-	  console.log('mobile: enter...');
+	  console.log('mobile: start...');
 	  exports.defaultLicensePlate = plateId;
 	  var lp = {
 	    id: plateId,
