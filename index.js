@@ -87,6 +87,12 @@ export function lane(/* plateId, streetId */) {
   return this
 }
 
+// shorten mobile and lane API to enable "ht.ml"
+export function ml(plateId, streetId) {
+  mobile(plateId).lane(streetId)
+  return this
+}
+
 // change lanes by turning
 export function turn(/* plateId, streetId */) {
   let plateId = ''
