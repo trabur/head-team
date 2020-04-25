@@ -15,24 +15,33 @@
       </div>
       <h1 style="text-align: center;">ht.checkpoint.pass()</h1>
       <h2>PASS is the equivalent to REGISTER on other websites.</h2>
-<pre><code class="language-md">PASS --> SPAS --> SSAP ... ACK</code></pre>
-<pre><code class="language-js">let beep = "AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz" // road
-let turn = ht.secret(2 * 26, beep) // road
-let vehicle = ht.mobile()
-let transportA = ht.lane(vehicle, beep)
-let transportB = ht.turn(transportA, turn)
-let username = "Bob"
-let password = "Carl"
-let pass = ht.checkpoint.pass(transportB, username, password)
+<pre><code class="language-md">PASS --> SPAS --> SSPA ... ACK</code></pre>
+<pre><code class="language-js">let username = "Alice" // public-key
+let password = "Bob" // private-key
+let id = username // license plate
+let highway = "AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz" // road
+let driveway = ht.secret(2 * 26, highway) // road
+// --with--
+ht.mobile(id) // vehicle
+ht.lane(id, highway) // transport
+ht.turn(id, driveway)
+ht.beep(id)
+ht.checkpoint.pass(id, username, password)
+// --or--
+ht.mobile(id).lane(highway).turn(driveway).beep().checkpoint.pass(username, password)
 </code></pre>
 <pre><code class="language-js">// mobile: enter...
 // lane: transporting...
-// lane: yield on SFM...
+// listen: AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz
 // turn: exit AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz
-// exit: leave lane... ok
-// turn: enter lruPNKglPsMvUBePMICePXtrEenwXpLfuDbTGdzNmxrJqHqXRUdc
-// listen: lruPNKglPsMvUBePMICePXtrEenwXpLfuDbTGdzNmxrJqHqXRUdc
-// checkpoint.pass: register Bob
+// turn: enter hWnKAoQDyazFbNHAYGRebXMJBNTyNbMAOnAUhxrxrBUxNkJacLzW
+// listen: hWnKAoQDyazFbNHAYGRebXMJBNTyNbMAOnAUhxrxrBUxNkJacLzW
+// beep: hWnKAoQDyazFbNHAYGRebXMJBNTyNbMAOnAUhxrxrBUxNkJacLzW
+// beep: HONK
+// checkpoint.pass: register Alice
+// checkpoint.pass: {log: "Successfully checked in: Alice.", topic: "SFS:user_register", username: "Alice"}
+// checkpoint.ack: login Alice
+// checkpoint.ack: {log: "Successfully authenticated: Alice.", token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJKb…jZSJ9.EpKPOZ7NvwrqXSfj5e1dgHx_etN_KdcWN0H0IJj2XrQ", topic: "SFS:user_login", username: "Alice", verify: true}
 </code></pre>
       <h1 style="text-align: center;"><a href="/">UPWARD</a> :)</h1>
       <div style="border-top: 5px dashed;">

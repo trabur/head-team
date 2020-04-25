@@ -1197,9 +1197,9 @@ var ht = (function (exports) {
 	  licensePlates[i].streetId = streetId; // for lane and turn
 
 	  lp.channel && lp.channel.on("room:".concat(streetId), function (msg) {
-	    msg.log ? console.log(msg.log) : null;
-	    msg.alert ? alert(msg.alert) : null;
-
+	    // keep these turned off
+	    // msg.log ? console.log(msg.log) : null;
+	    // msg.alert ? alert(msg.alert) : null;
 	    if (msg.payload) {
 	      messages.set(msg.payload);
 	    }
@@ -1211,14 +1211,14 @@ var ht = (function (exports) {
 	        break;
 
 	      case 'SFS:user_login':
-	        console.log('SFS:user_login', msg);
+	        console.log('checkpoint.ack:', msg);
 	        localStorage.setItem('token', msg.token); // window.location = `/accounts/${msg.username}`
 
 	        break;
 
 	      case 'SFS:user_register':
-	        console.log('SFS:user_register', msg);
-	        login(channel, streetId, exports.credentials.username, exports.credentials.password);
+	        console.log('checkpoint.pass:', msg);
+	        login(plateId, exports.credentials.username, exports.credentials.password);
 	        exports.credentials = {};
 	        break;
 	    }
@@ -1241,27 +1241,57 @@ var ht = (function (exports) {
 	  channel.off("room:".concat(streetId));
 	} // pass
 
-	function register(_ref, username, password) {
-	  var channel = _ref.channel,
-	      streetId = _ref.streetId;
-	  console.log("checkpoint.pass: register ".concat(username));
+	function register()
+	/* plateId, username, password */
+	{
+	  var plateId = '';
+	  var username = '';
+	  var password = '';
+
+	  if (arguments.length === 3) {
+	    plateId = arguments[0];
+	    username = arguments[1];
+	    password = arguments[2];
+	  } else {
+	    plateId = exports.defaultLicensePlate;
+	    username = arguments[0];
+	    password = arguments[1];
+	  }
+
 	  exports.credentials = {
 	    username: username,
 	    password: password
 	  };
-	  channel.push('SFS:user_register', {
-	    room: streetId,
+	  console.log("checkpoint.pass: register ".concat(username));
+	  var lp = findByPlate(plateId);
+	  lp.channel.push('SFS:user_register', {
+	    room: lp.streetId,
 	    username: username,
 	    password: password
 	  });
 	} // ack
 
-	function login(_ref2, username, password) {
-	  var channel = _ref2.channel,
-	      streetId = _ref2.streetId;
+	function login()
+	/* plateId, username, password */
+	{
+	  var plateId = '';
+	  var username = '';
+	  var password = '';
+
+	  if (arguments.length === 3) {
+	    plateId = arguments[0];
+	    username = arguments[1];
+	    password = arguments[2];
+	  } else {
+	    plateId = exports.defaultLicensePlate;
+	    username = arguments[0];
+	    password = arguments[1];
+	  }
+
 	  console.log("checkpoint.ack: login ".concat(username));
-	  channel.push('SFS:user_login', {
-	    room: streetId,
+	  var lp = findByPlate(plateId);
+	  lp.channel.push('SFS:user_login', {
+	    room: lp.streetId,
 	    username: username,
 	    password: password
 	  });
@@ -1272,9 +1302,9 @@ var ht = (function (exports) {
 	  ack: login
 	}; // broadcast
 
-	function radio(_ref3, from, message) {
-	  var channel = _ref3.channel,
-	      streetId = _ref3.streetId;
+	function radio(_ref, from, message) {
+	  var channel = _ref.channel,
+	      streetId = _ref.streetId;
 	  console.log("radio: ".concat(message));
 	  channel.push("room:broadcast", {
 	    room: streetId,

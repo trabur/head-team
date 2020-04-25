@@ -119,8 +119,9 @@ export function listen(plateId, streetId) {
   licensePlates[i].streetId = streetId // for lane and turn
 
   lp.channel && lp.channel.on(`room:${streetId}`, msg => {
-    msg.log ? console.log(msg.log) : null;
-    msg.alert ? alert(msg.alert) : null;
+    // keep these turned off
+    // msg.log ? console.log(msg.log) : null;
+    // msg.alert ? alert(msg.alert) : null;
 
     if (msg.payload) {
       messages.set(msg.payload)
@@ -132,13 +133,13 @@ export function listen(plateId, streetId) {
         console.log('beep: HONK')
         break;
       case 'SFS:user_login':
-        console.log('SFS:user_login', msg)
+        console.log('checkpoint.ack:', msg)
         localStorage.setItem('token', msg.token)
         // window.location = `/accounts/${msg.username}`
         break;
       case 'SFS:user_register':
-        console.log('SFS:user_register', msg)
-        login(channel, streetId, credentials.username, credentials.password)
+        console.log('checkpoint.pass:', msg)
+        login(plateId, credentials.username, credentials.password)
         credentials = {}
         break;
       default:
@@ -167,16 +168,42 @@ export function exit(channel, streetId) {
 }
 
 // pass
-export function register({ channel, streetId }, username, password) {
-  console.log(`checkpoint.pass: register ${username}`)
+export function register(/* plateId, username, password */) {
+  let plateId = ''
+  let username = ''
+  let password = ''
+  if (arguments.length === 3) {
+    plateId = arguments[0]
+    username = arguments[1]
+    password = arguments[2]
+  } else {
+    plateId = defaultLicensePlate
+    username = arguments[0]
+    password = arguments[1]
+  }
   credentials = { username, password }
-  channel.push('SFS:user_register', { room: streetId, username, password })
+  console.log(`checkpoint.pass: register ${username}`)
+  let lp = findByPlate(plateId)
+  lp.channel.push('SFS:user_register', { room: lp.streetId, username, password })
 }
 
 // ack
-export function login({ channel, streetId }, username, password) {
+export function login(/* plateId, username, password */) {
+  let plateId = ''
+  let username = ''
+  let password = ''
+  if (arguments.length === 3) {
+    plateId = arguments[0]
+    username = arguments[1]
+    password = arguments[2]
+  } else {
+    plateId = defaultLicensePlate
+    username = arguments[0]
+    password = arguments[1]
+  }
   console.log(`checkpoint.ack: login ${username}`)
-  channel.push('SFS:user_login', { room: streetId, username, password })
+  let lp = findByPlate(plateId)
+  lp.channel.push('SFS:user_login', { room: lp.streetId, username, password })
 }
 
 // authentication
