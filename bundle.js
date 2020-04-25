@@ -1089,56 +1089,114 @@ var ht = (function (exports) {
 	 */
 
 	var messages = {};
-	exports.credentials = {}; // PING/PONG
+	exports.credentials = {};
+	exports.defaultLicensePlate = 'ABC'; // used for method chaining
 
-	function beep(transport) {
-	  console.log("beep: ".concat(transport.streetId));
-	  transport.channel.push("SFS:ping", {
-	    room: transport.streetId
+	var licensePlates = [{
+	  id: null,
+	  socket: null,
+	  channel: null,
+	  streetId: null
+	}]; // search license plates
+
+	function findByPlate(plateId) {
+	  var i = licensePlates.findIndex(function (lp) {
+	    return lp.id === plateId;
 	  });
+	  return licensePlates[i];
+	} // PING/PONG
+
+	function beep()
+	/* plateId */
+	{
+	  var plateId = '';
+
+	  if (arguments.length === 1) {
+	    plateId = arguments[0];
+	  } else {
+	    plateId = exports.defaultLicensePlate;
+	  }
+
+	  var lp = findByPlate(plateId);
+	  console.log("beep: ".concat(lp.streetId));
+	  lp.channel.push("SFS:ping", {
+	    room: lp.streetId
+	  });
+	  return this;
 	} // begin socket
 
-	function mobile() {
+	function mobile(plateId) {
 	  console.log('mobile: enter...');
-	  return new phoenix_1("wss://simple.fleetgrid.com/socket");
+	  exports.defaultLicensePlate = plateId;
+	  var lp = {
+	    id: plateId,
+	    socket: new phoenix_1("wss://simple.fleetgrid.com/socket")
+	  };
+	  licensePlates.push(lp);
+	  return this;
 	} // lane and channel are both same here
 
-	function lane(mobile, streetId) {
+	function lane()
+	/* plateId, streetId */
+	{
+	  var plateId = '';
+	  var streetId = '';
+
+	  if (arguments.length === 2) {
+	    plateId = arguments[0];
+	    streetId = arguments[1];
+	  } else {
+	    plateId = exports.defaultLicensePlate;
+	    streetId = arguments[0];
+	  }
+
 	  console.log('lane: transporting...');
-	  mobile.connect();
-	  var chan = mobile.channel("SFM", {});
+	  var lp = findByPlate(plateId);
+	  lp.socket.connect();
+	  var chan = lp.socket.channel("SFM", {});
 	  chan.join().receive("ok", function (resp) {
 	    console.log("lane: yield on SFM...", resp);
 	  }).receive("error", function (resp) {
 	    console.log("lane: jam on SFM...", resp);
 	  });
-	  listen({
-	    channel: chan,
-	    streetId: streetId
-	  });
-	  return {
-	    channel: chan,
-	    streetId: streetId
-	  };
+	  lp.channel = chan;
+	  listen(plateId, streetId);
+	  return this;
 	} // change lanes by turning
 
-	function turn(transport, streetId) {
-	  // exit
-	  console.log("turn: exit ".concat(transport.streetId));
-	  exit(transport.channel, transport.streetId); // enter
+	function turn()
+	/* plateId, streetId */
+	{
+	  var plateId = '';
+	  var streetId = '';
+
+	  if (arguments.length === 2) {
+	    plateId = arguments[0];
+	    streetId = arguments[1];
+	  } else {
+	    plateId = exports.defaultLicensePlate;
+	    streetId = arguments[0];
+	  }
+
+	  var lp = findByPlate(plateId); // exit
+
+	  console.log("turn: exit ".concat(lp.streetId));
+	  exit(lp.channel, lp.streetId); // enter
 
 	  console.log("turn: enter ".concat(streetId));
-	  listen({
-	    channel: transport.channel,
-	    streetId: streetId
-	  });
+	  listen(plateId, streetId);
+	  return this;
 	} // listen to events being returned
 
-	function listen(_ref) {
-	  var channel = _ref.channel,
-	      streetId = _ref.streetId;
+	function listen(plateId, streetId) {
 	  console.log("listen: ".concat(streetId));
-	  channel && channel.on("room:".concat(streetId), function (msg) {
+	  var lp = findByPlate(plateId);
+	  var i = licensePlates.findIndex(function (lp) {
+	    return lp.id === plateId;
+	  });
+	  licensePlates[i].streetId = streetId; // for lane and turn
+
+	  lp.channel && lp.channel.on("room:".concat(streetId), function (msg) {
 	    msg.log ? console.log(msg.log) : null;
 	    msg.alert ? alert(msg.alert) : null;
 
@@ -1166,35 +1224,26 @@ var ht = (function (exports) {
 	    }
 	  });
 	} // shutdown / unlisten
-
-	function park(mobile, channel, streetId) {
-	  console.log("park: ".concat(mobile));
-
-	  if (channel) {
-	    channel.off("room:".concat(streetId));
-	    channel.leave().receive("ok", function () {
-	      return console.log("park: exit street... ok");
-	    });
-	  }
-
-	  if (mobile) {
-	    mobile.off("SFM");
-	    mobile.disconnect(function () {
-	      return console.log("park: halt mobile... ok");
-	    });
-	  }
-	} // exit lane
+	// export function park(mobile, channel, streetId) {
+	//   console.log(`park: ${mobile}`)
+	//   if (channel) {
+	//     channel.off(`room:${streetId}`)
+	//     channel.leave().receive("ok", () => console.log("park: exit street... ok"))
+	//   }
+	//   if (mobile) {
+	//     mobile.off("SFM")
+	//     mobile.disconnect(() => console.log("park: halt mobile... ok"))
+	//   }
+	// }
+	// exit street
 
 	function exit(channel, streetId) {
 	  channel.off("room:".concat(streetId));
-	  channel.leave().receive("ok", function () {
-	    return console.log("exit: leave lane... ok");
-	  });
 	} // pass
 
-	function register(_ref2, username, password) {
-	  var channel = _ref2.channel,
-	      streetId = _ref2.streetId;
+	function register(_ref, username, password) {
+	  var channel = _ref.channel,
+	      streetId = _ref.streetId;
 	  console.log("checkpoint.pass: register ".concat(username));
 	  exports.credentials = {
 	    username: username,
@@ -1207,9 +1256,9 @@ var ht = (function (exports) {
 	  });
 	} // ack
 
-	function login(_ref3, username, password) {
-	  var channel = _ref3.channel,
-	      streetId = _ref3.streetId;
+	function login(_ref2, username, password) {
+	  var channel = _ref2.channel,
+	      streetId = _ref2.streetId;
 	  console.log("checkpoint.ack: login ".concat(username));
 	  channel.push('SFS:user_login', {
 	    room: streetId,
@@ -1223,9 +1272,9 @@ var ht = (function (exports) {
 	  ack: login
 	}; // broadcast
 
-	function radio(_ref4, from, message) {
-	  var channel = _ref4.channel,
-	      streetId = _ref4.streetId;
+	function radio(_ref3, from, message) {
+	  var channel = _ref3.channel,
+	      streetId = _ref3.streetId;
 	  console.log("radio: ".concat(message));
 	  channel.push("room:broadcast", {
 	    room: streetId,
@@ -1249,12 +1298,13 @@ var ht = (function (exports) {
 	exports.beep = beep;
 	exports.checkpoint = checkpoint;
 	exports.exit = exit;
+	exports.findByPlate = findByPlate;
 	exports.lane = lane;
+	exports.licensePlates = licensePlates;
 	exports.listen = listen;
 	exports.login = login;
 	exports.messages = messages;
 	exports.mobile = mobile;
-	exports.park = park;
 	exports.radio = radio;
 	exports.register = register;
 	exports.secret = secret;

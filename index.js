@@ -13,6 +13,7 @@ import { Socket } from 'phoenix'
  */
 export let messages = {}
 export let credentials = {}
+export let defaultLicensePlate = 'ABC' // used for method chaining
 export let licensePlates = [
   {
     id: null,
@@ -31,26 +32,43 @@ export function findByPlate(plateId) {
 }
 
 // PING/PONG
-export function beep(plateId) {
+export function beep(/* plateId */) {
+  let plateId = ''
+  if (arguments.length === 1) {
+    plateId = arguments[0]
+  } else {
+    plateId = defaultLicensePlate
+  }
   let lp = findByPlate(plateId)
   console.log(`beep: ${lp.streetId}`)
 
   lp.channel.push(`SFS:ping`, { room: lp.streetId })
+  return this
 }
 
 // begin socket
 export function mobile(plateId) {
   console.log('mobile: enter...')
+  defaultLicensePlate = plateId
   let lp = {
     id: plateId,
     socket: new Socket(`wss://simple.fleetgrid.com/socket`)
   }
   licensePlates.push(lp)
-  return lp
+  return this
 }
 
 // lane and channel are both same here
-export function lane(plateId, streetId) {
+export function lane(/* plateId, streetId */) {
+  let plateId = ''
+  let streetId = ''
+  if (arguments.length === 2) {
+    plateId = arguments[0]
+    streetId = arguments[1]
+  } else {
+    plateId = defaultLicensePlate
+    streetId = arguments[0]
+  }
   console.log('lane: transporting...')
   let lp = findByPlate(plateId)
 
@@ -70,7 +88,16 @@ export function lane(plateId, streetId) {
 }
 
 // change lanes by turning
-export function turn(plateId, streetId) {
+export function turn(/* plateId, streetId */) {
+  let plateId = ''
+  let streetId = ''
+  if (arguments.length === 2) {
+    plateId = arguments[0]
+    streetId = arguments[1]
+  } else {
+    plateId = defaultLicensePlate
+    streetId = arguments[0]
+  }
   let lp = findByPlate(plateId)
 
   // exit
@@ -79,12 +106,17 @@ export function turn(plateId, streetId) {
   // enter
   console.log(`turn: enter ${streetId}`)
   listen(plateId, streetId)
+  return this
 }
 
 // listen to events being returned
 export function listen(plateId, streetId) {
   console.log(`listen: ${streetId}`)
   let lp = findByPlate(plateId)
+  let i = licensePlates.findIndex((lp) => {
+    return lp.id === plateId
+  })
+  licensePlates[i].streetId = streetId // for lane and turn
 
   lp.channel && lp.channel.on(`room:${streetId}`, msg => {
     msg.log ? console.log(msg.log) : null;
@@ -117,22 +149,21 @@ export function listen(plateId, streetId) {
 }
 
 // shutdown / unlisten
-export function park(mobile, channel, streetId) {
-  console.log(`park: ${mobile}`)
-  if (channel) {
-    channel.off(`room:${streetId}`)
-    channel.leave().receive("ok", () => console.log("park: exit street... ok"))
-  }
-  if (mobile) {
-    mobile.off("SFM")
-    mobile.disconnect(() => console.log("park: halt mobile... ok"))
-  }
-}
+// export function park(mobile, channel, streetId) {
+//   console.log(`park: ${mobile}`)
+//   if (channel) {
+//     channel.off(`room:${streetId}`)
+//     channel.leave().receive("ok", () => console.log("park: exit street... ok"))
+//   }
+//   if (mobile) {
+//     mobile.off("SFM")
+//     mobile.disconnect(() => console.log("park: halt mobile... ok"))
+//   }
+// }
 
-// exit lane
+// exit street
 export function exit(channel, streetId) {
   channel.off(`room:${streetId}`)
-  channel.leave().receive("ok", () => console.log("exit: leave lane... ok"))
 }
 
 // pass

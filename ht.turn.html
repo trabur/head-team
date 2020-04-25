@@ -26,15 +26,19 @@ ht.lane(id, first) // transport
 ht.turn(id, second)
 ht.turn(id, third)
 ht.beep(id)
---or--
+// --or--
 ht.mobile(id).lane(first).turn(second).turn(third).beep()
 </code></pre>
 <pre><code class="language-js">// mobile: enter...
 // lane: transporting...
-// lane: yield on SFM...
-// turn: towards 2nd Street
-// turn: towards 3nd Street
-// listen: 3nd Street
+// listen: 1st Street
+// turn: exit 1st Street
+// turn: enter 2nd Street
+// listen: 2nd Street
+// turn: exit 2nd Street
+// turn: enter 3rd Street
+// listen: 3rd Street
+// beep: 3rd Street
 // beep: HONK
 </code></pre>
       <h2>many things start out as 2 which is why it's just exmaple code. meaning, we could have gone big and used an example of a bunch of people on a bus; or we could have gone local and used an example of 1-4 people in a car.</h2>
