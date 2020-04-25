@@ -1162,6 +1162,11 @@ var ht = (function (exports) {
 	  lp.channel = chan;
 	  listen(plateId, streetId);
 	  return this;
+	} // shorten mobile and lane API to enable "ht.ml"
+
+	function ml(plateId, streetId) {
+	  mobile(plateId).lane(streetId);
+	  return this;
 	} // change lanes by turning
 
 	function turn()
@@ -1198,8 +1203,8 @@ var ht = (function (exports) {
 
 	  lp.channel && lp.channel.on("room:".concat(streetId), function (msg) {
 	    // keep these turned off
-	    // msg.log ? console.log(msg.log) : null;
-	    // msg.alert ? alert(msg.alert) : null;
+	    msg.log ? console.log(msg.log) : null; // msg.alert ? alert(msg.alert) : null;
+
 	    if (msg.payload) {
 	      messages.set(msg.payload);
 	    }
@@ -1334,6 +1339,7 @@ var ht = (function (exports) {
 	exports.listen = listen;
 	exports.login = login;
 	exports.messages = messages;
+	exports.ml = ml;
 	exports.mobile = mobile;
 	exports.radio = radio;
 	exports.register = register;

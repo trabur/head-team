@@ -126,7 +126,7 @@ export function listen(plateId, streetId) {
 
   lp.channel && lp.channel.on(`room:${streetId}`, msg => {
     // keep these turned off
-    // msg.log ? console.log(msg.log) : null;
+    msg.log ? console.log(msg.log) : null; // TODO: PONG is leaking here
     // msg.alert ? alert(msg.alert) : null;
 
     if (msg.payload) {
