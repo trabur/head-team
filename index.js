@@ -15,12 +15,12 @@ export let messages = {}
 export let credentials = {}
 export let defaultLicensePlate = 'ABC' // used for method chaining
 export let licensePlates = [
-  {
-    id: null,
-    socket: null,
-    channel: null,
-    streetId: null
-  }
+  // {
+  //   id: null,
+  //   socket: null,
+  //   channel: null,
+  //   streetId: null
+  // }
 ]
 
 // search license plates
@@ -87,9 +87,10 @@ export function lane(/* plateId, streetId */) {
   return this
 }
 
-// shorten mobile and lane API to enable "ht.ml"
-export function ml(plateId, streetId) {
-  mobile(plateId).lane(streetId)
+// shorten mobile and lane API with MOVE
+export function move(plateId, streetId) {
+  mobile(plateId)
+  lane(streetId)
   return this
 }
 
