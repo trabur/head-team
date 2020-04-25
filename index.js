@@ -22,10 +22,20 @@ export let licensePlates = [
   }
 ]
 
+// search license plates
+export function findByPlate(plateId) {
+  let i = licensePlates.findIndex((lp) => {
+    return lp.id === plateId
+  })
+  return licensePlates[i]
+}
+
 // PING/PONG
-export function beep(transport) {
-  console.log(`beep: ${transport.streetId}`)
-  transport.channel.push(`SFS:ping`, { room: transport.streetId })
+export function beep(plateId) {
+  let lp = findByPlate(plateId)
+  console.log(`beep: ${lp.streetId}`)
+
+  lp.channel.push(`SFS:ping`, { room: lp.streetId })
 }
 
 // begin socket
@@ -40,10 +50,12 @@ export function mobile(plateId) {
 }
 
 // lane and channel are both same here
-export function lane(mobile, streetId) {
+export function lane(plateId, streetId) {
   console.log('lane: transporting...')
-  mobile.connect()
-  let chan = mobile.channel(`SFM`, {})
+  let lp = findByPlate(plateId)
+
+  lp.socket.connect()
+  let chan = lp.socket.channel(`SFM`, {})
   
   chan.join()
     .receive("ok", resp => {
@@ -51,27 +63,30 @@ export function lane(mobile, streetId) {
     })
     .receive("error", resp => { console.log("lane: jam on SFM...", resp) })
 
-  listen({ channel: chan, streetId })
+  lp.channel = chan
 
-
-  
-  return { channel: chan, streetId }
+  listen(plateId, streetId)
+  return this
 }
 
 // change lanes by turning
-export function turn(transport, streetId) {
+export function turn(plateId, streetId) {
+  let lp = findByPlate(plateId)
+
   // exit
-  console.log(`turn: exit ${transport.streetId}`)
-  exit(transport.channel, transport.streetId)
+  console.log(`turn: exit ${lp.streetId}`)
+  exit(lp.channel, lp.streetId)
   // enter
   console.log(`turn: enter ${streetId}`)
-  listen({ channel: transport.channel, streetId })
+  listen(plateId, streetId)
 }
 
 // listen to events being returned
-export function listen({ channel, streetId }) {
+export function listen(plateId, streetId) {
   console.log(`listen: ${streetId}`)
-  channel && channel.on(`room:${streetId}`, msg => {
+  let lp = findByPlate(plateId)
+
+  lp.channel && lp.channel.on(`room:${streetId}`, msg => {
     msg.log ? console.log(msg.log) : null;
     msg.alert ? alert(msg.alert) : null;
 
