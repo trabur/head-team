@@ -48,7 +48,7 @@ export function beep(/* plateId */) {
 
 // begin socket
 export function mobile(plateId) {
-  console.log('mobile: enter...')
+  console.log('mobile: start...')
   defaultLicensePlate = plateId
   let lp = {
     id: plateId,
