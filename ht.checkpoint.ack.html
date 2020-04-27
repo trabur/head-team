@@ -15,7 +15,7 @@
       </div>
       <h1 style="text-align: center;">ht.checkpoint.ack()</h1>
       <h2>ACK is the equivalent to LOGIN on other websites.</h2>
-<pre><code class="language-md">ACK --> KAC --> CKA ... PASS</code></pre>
+<pre><code class="language-a">ACK --> KAC --> CKA ... PASS</code></pre>
 <pre><code class="language-js">let username = "Alice" // public-key
 let password = "Bob" // private-key
 let id = username // license plate
@@ -26,11 +26,11 @@ ht.mobile(id) // vehicle
 ht.lane(id, highway) // transport
 ht.turn(id, driveway)
 ht.beep(id)
-ht.checkpoint.ack(id, username, password)
+ht.ack(id, username, password)
 // --or--
-ht.mobile(id).lane(highway).turn(driveway).beep().checkpoint.ack(username, password)
+ht.move(id, highway).turn(driveway).beep().ack(username, password)
 </code></pre>
-<pre><code class="language-js">// mobile: start...
+<pre><code class="language-css">// mobile: start...
 // lane: transporting...
 // listen: zZyYxXwWvVuUtTsSrRqQpPoOnNmMlLkKjJiIhHgGfFeEdDcCbBaA
 // turn: exit zZyYxXwWvVuUtTsSrRqQpPoOnNmMlLkKjJiIhHgGfFeEdDcCbBaA

@@ -174,8 +174,8 @@ export function exit(channel, streetId) {
   channel.off(`room:${streetId}`)
 }
 
-// pass
-export function register(/* plateId, username, password */) {
+// checkpoint / register
+export function pass(/* plateId, username, password */) {
   let plateId = ''
   let username = ''
   let password = ''
@@ -194,8 +194,8 @@ export function register(/* plateId, username, password */) {
   lp.channel.push('SFS:user_register', { room: lp.streetId, username, password })
 }
 
-// ack
-export function login(/* plateId, username, password */) {
+// checkpoint / login
+export function ack(/* plateId, username, password */) {
   let plateId = ''
   let username = ''
   let password = ''
@@ -215,8 +215,8 @@ export function login(/* plateId, username, password */) {
 
 // authentication
 export let checkpoint = {
-  pass: register,
-  ack: login
+  pass,
+  ack
 }
 
 // broadcast

@@ -56,15 +56,20 @@ pre[class*="language-"] {
 	overflow: auto;
 }
 
-:not(pre) > code[class*="language-"],
+:not(pre) > code[class*="language-css"],
 pre[class*="language-"] {
 	background: #eee;
 	border: 5px dotted #333;
 }
 
-:not(pre) > code[class*="language-md"],
-pre[class*="language-md"] {
+:not(pre) > code[class*="language-a"],
+pre[class*="language-a"] {
 	border: 5px solid #333;
+}
+
+:not(pre) > code[class*="language-js"],
+pre[class*="language-js"] {
+	border: 5px dashed #333;
 }
 
 /* Inline code */
