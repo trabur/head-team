@@ -16,10 +16,11 @@ export let credentials = {}
 export let defaultLicensePlate = 'ABC' // used for method chaining
 export let licensePlates = [
   // {
-  //   id: null,
+  //   id: 'ABC',
   //   socket: null,
   //   channel: null,
-  //   streetId: null
+  //   streetId: null,
+  //   key: null
   // }
 ]
 
@@ -232,4 +233,21 @@ export function secret(length, array) {
     TCP += array[Math.floor(Math.random() * array.length)]
   }
   return TCP
+}
+
+// keystone
+export function key(/* plateId, id */) {
+  let plateId = ''
+  let id = null
+  if (arguments.length === 3) {
+    plateId = arguments[0]
+    id = arguments[1]
+  } else {
+    plateId = defaultLicensePlate
+    id = arguments[0]
+  }
+  let i = licensePlates.findIndex((lp) => {
+    return lp.id === plateId
+  })
+  licensePlates[i].key = id
 }

@@ -22,8 +22,8 @@ let id = "test"
 // --with--
 ht.mobile(plateId) // vehicle
 ht.lane(plateId, highway) // transport
-ht.key(id)
-ht.highway.find()
+ht.key(plateId, id)
+ht.highway.find(plateId)
 // --or--
 ht.move(plateId, highway).key(id).find()
 </code></pre>

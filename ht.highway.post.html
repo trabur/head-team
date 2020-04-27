@@ -23,8 +23,8 @@ let value = {"object": "asd"}
 // --with--
 ht.mobile(plateId) // vehicle
 ht.lane(plateId, highway) // transport
-ht.key(id)
-ht.highway.post(value)
+ht.key(plateId, id)
+ht.highway.post(plateId, value)
 // --or--
 ht.move(plateId, highway).key(id).post(value)
 </code></pre>

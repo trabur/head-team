@@ -1093,10 +1093,11 @@ var ht = (function (exports) {
 	exports.defaultLicensePlate = 'ABC'; // used for method chaining
 
 	var licensePlates = [] // {
-	//   id: null,
+	//   id: 'ABC',
 	//   socket: null,
 	//   channel: null,
-	//   streetId: null
+	//   streetId: null,
+	//   key: null
 	// }
 	// search license plates
 ;
@@ -1226,7 +1227,7 @@ var ht = (function (exports) {
 
 	      case 'SFS:user_register':
 	        console.log('checkpoint.pass:', msg);
-	        login(plateId, exports.credentials.username, exports.credentials.password);
+	        ack(plateId, exports.credentials.username, exports.credentials.password);
 	        exports.credentials = {};
 	        break;
 	    }
@@ -1247,9 +1248,9 @@ var ht = (function (exports) {
 
 	function exit(channel, streetId) {
 	  channel.off("room:".concat(streetId));
-	} // pass
+	} // checkpoint / register
 
-	function register()
+	function pass()
 	/* plateId, username, password */
 	{
 	  var plateId = '';
@@ -1277,9 +1278,9 @@ var ht = (function (exports) {
 	    username: username,
 	    password: password
 	  });
-	} // ack
+	} // checkpoint / login
 
-	function login()
+	function ack()
 	/* plateId, username, password */
 	{
 	  var plateId = '';
@@ -1306,8 +1307,8 @@ var ht = (function (exports) {
 	} // authentication
 
 	var checkpoint = {
-	  pass: register,
-	  ack: login
+	  pass: pass,
+	  ack: ack
 	}; // broadcast
 
 	function radio(_ref, from, message) {
@@ -1331,21 +1332,42 @@ var ht = (function (exports) {
 	  }
 
 	  return TCP;
+	} // keystone
+
+	function key()
+	/* plateId, id */
+	{
+	  var plateId = '';
+	  var id = null;
+
+	  if (arguments.length === 3) {
+	    plateId = arguments[0];
+	    id = arguments[1];
+	  } else {
+	    plateId = exports.defaultLicensePlate;
+	    id = arguments[0];
+	  }
+
+	  var i = licensePlates.findIndex(function (lp) {
+	    return lp.id === plateId;
+	  });
+	  licensePlates[i].key = id;
 	}
 
+	exports.ack = ack;
 	exports.beep = beep;
 	exports.checkpoint = checkpoint;
 	exports.exit = exit;
 	exports.findByPlate = findByPlate;
+	exports.key = key;
 	exports.lane = lane;
 	exports.licensePlates = licensePlates;
 	exports.listen = listen;
-	exports.login = login;
 	exports.messages = messages;
 	exports.mobile = mobile;
 	exports.move = move;
+	exports.pass = pass;
 	exports.radio = radio;
-	exports.register = register;
 	exports.secret = secret;
 	exports.turn = turn;
 
