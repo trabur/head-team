@@ -1,0 +1,46 @@
+<html>
+  <head>
+    <title>ht.highway.post()</title>
+    <link href="themes/prism.css" rel="stylesheet" />
+    <script src="libs/prism.js"></script>
+    <script src="bundle.js"></script>
+  </head>
+  <body style="margin: 0; color: #333; font-family: sans-serif; overflow: hidden;">
+    <div style="max-width: 800px; margin: 0 auto; background: #eee; height: 100%; padding: 0 1em; position: relative; overflow: auto;">
+      <br />
+      <br />
+      <br />
+      <div style="border-bottom: 5px dashed;">
+        <h2 style="text-align: center;">METAHEAP</h2>
+      </div>
+      <h1 style="text-align: center;">ht.highway.post()</h1>
+      <h2>FIND and POST are both highway methods which means data is publicly readable/writable.</h2>
+<pre><code class="language-a">HIGHWAY <--> HIGHWAY // POST</code></pre>
+<pre><code class="language-js">let plateId = "ABC" // license plate
+let highway = "0987654321" // road
+let id = "test"
+let value = {"object": "asd"}
+// --with--
+ht.mobile(plateId) // vehicle
+ht.lane(plateId, highway) // transport
+ht.key(id)
+ht.highway.post(value)
+// --or--
+ht.move(plateId, highway).key(id).post(value)
+</code></pre>
+<pre><code class="language-css">// mobile: start...
+// lane: transporting...
+// listen: 0987654321
+// highway.post: 
+// highway.post: 
+</code></pre>
+      <h1 style="text-align: center;"><a href="/">UPWARD</a> :)</h1>
+      <div style="border-top: 5px dashed;">
+        <h2 style="text-align: center;">METAHEAP</h2>
+      </div>
+      <br />
+      <br />
+      <br />
+    </div>
+  </body>
+</html>
