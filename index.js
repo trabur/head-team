@@ -146,7 +146,7 @@ export function listen(plateId, streetId) {
         break;
       case 'SFS:user_register':
         console.log('checkpoint.pass:', msg)
-        login(plateId, credentials.username, credentials.password)
+        ack(plateId, credentials.username, credentials.password)
         credentials = {}
         break;
       default:
