@@ -11,7 +11,7 @@ const config = {
 		},
 		{
 			file: 'node.js',
-      format: 'cjs'
+      format: 'amd'
 		}
 	],
 	plugins: [
