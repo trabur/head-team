@@ -6,7 +6,6 @@
   "scripts": {
     "bundle": "rollup -c rollup.config.js --name ht"
   },
-  "type": "module",
   "author": "https://istrav.com",
   "homepage": "https://metaheap.io",
   "dependencies": {
