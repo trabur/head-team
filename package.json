@@ -11,6 +11,7 @@
   "dependencies": {
     "babel-preset-env": "^1.7.0",
     "gulp": "^4.0.2",
+    "liferaft": "^0.1.1",
     "phoenix": "^1.5.0-rc.0",
     "rollup-plugin-commonjs": "^10.1.0"
   },

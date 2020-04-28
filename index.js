@@ -7,6 +7,7 @@ console.log("WELCOME! WELCOME! WELCOME! thank you for using HT :) ~metaheap.io")
  * includes
  */
 import { Socket } from 'phoenix'
+import Raft from 'liferaft'
 
 /*
  * script
@@ -20,7 +21,8 @@ export let licensePlates = [
   //   socket: null,
   //   channel: null,
   //   streetId: null,
-  //   key: null
+  //   key: null,
+  //   raft: null
   // }
 ]
 
@@ -140,6 +142,11 @@ export function listen(plateId, streetId) {
         // console.log('SFS:ping', msg)
         console.log('beep: HONK')
         break;
+      case 'SFS:raft':
+        console.log('auto.packet:', msg.packet)
+        let lp = findByPlate(msg.id)
+        lp.raft.emit('data', msg.packet)
+        break;
       case 'SFS:user_login':
         console.log('checkpoint.ack:', msg)
         localStorage.setItem('token', msg.token)
@@ -239,7 +246,7 @@ export function secret(length, array) {
 export function key(/* plateId, id */) {
   let plateId = ''
   let id = null
-  if (arguments.length === 3) {
+  if (arguments.length === 2) {
     plateId = arguments[0]
     id = arguments[1]
   } else {
@@ -250,4 +257,74 @@ export function key(/* plateId, id */) {
     return lp.id === plateId
   })
   licensePlates[i].key = id
+}
+
+/*
+ * AUTO
+ */
+var Boat = Raft.extend({
+  socket: null,
+  write: function write(packet, callback) {
+    let lp = findByPlate(this.address)
+    lp.channel.push('SFS:raft', { 
+      room: lp.streetId,
+      plateId: this.address,
+      packet
+    })
+    listen(this.address, lp.streetId)
+    callback()
+  }
+})
+
+function newRaft(plateId, address) {
+  let options = arguments[2] || {}
+  let lp = findByPlate(plateId)
+  lp.raft = new Boat(address.address, options);
+  return auto
+}
+
+function joinRaft(/* plateId, address, write */) {
+  let plateId = ''
+  let address = null
+  let write = null
+  if (arguments.length === 3) {
+    plateId = arguments[0]
+    address = arguments[1]
+    write = arguments[2]
+  } else {
+    plateId = defaultLicensePlate
+    address = arguments[0]
+    write = arguments[1]
+  }
+  let i = licensePlates.findIndex((lp) => {
+    return lp.id === plateId
+  })
+
+  licensePlates[i].raft.join(address, write)
+  return auto
+}
+
+function onRaft(/* plateId, listen, callback */) {
+  let plateId = ''
+  let listen = null
+  let callback = null
+  if (arguments.length === 3) {
+    plateId = arguments[0]
+    listen = arguments[1]
+    callback = arguments[2]
+  } else {
+    plateId = defaultLicensePlate
+    listen = arguments[0]
+    callback = arguments[1]
+  }
+  let lp = findByPlate(plateId)
+  lp.raft.on(listen, callback)
+  return auto
+}
+
+// consensus algorithm
+export let auto = {
+  new: newRaft,
+  join: joinRaft,
+  on: onRaft
 }

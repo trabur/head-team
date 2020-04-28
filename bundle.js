@@ -1080,6 +1080,1751 @@ var ht = (function (exports) {
 	var phoenix_1 = phoenix.Socket;
 	var phoenix_2 = phoenix.Phoenix;
 
+	var eventemitter3 = createCommonjsModule(function (module) {
+	  // We store our EE objects in a plain object whose properties are event names.
+	  // If `Object.create(null)` is not supported we prefix the event names with a
+	  // `~` to make sure that the built-in object properties are not overridden or
+	  // used as an attack vector.
+	  // We also assume that `Object.create(null)` is available when the event name
+	  // is an ES6 Symbol.
+	  //
+
+	  var prefix = typeof Object.create !== 'function' ? '~' : false;
+	  /**
+	   * Representation of a single EventEmitter function.
+	   *
+	   * @param {Function} fn Event handler to be called.
+	   * @param {Mixed} context Context for function execution.
+	   * @param {Boolean} once Only emit once
+	   * @api private
+	   */
+
+	  function EE(fn, context, once) {
+	    this.fn = fn;
+	    this.context = context;
+	    this.once = once || false;
+	  }
+	  /**
+	   * Minimal EventEmitter interface that is molded against the Node.js
+	   * EventEmitter interface.
+	   *
+	   * @constructor
+	   * @api public
+	   */
+
+
+	  function EventEmitter() {}
+	  /* Nothing to set */
+
+	  /**
+	   * Holds the assigned EventEmitters by name.
+	   *
+	   * @type {Object}
+	   * @private
+	   */
+
+
+	  EventEmitter.prototype._events = undefined;
+	  /**
+	   * Return a list of assigned event listeners.
+	   *
+	   * @param {String} event The events that should be listed.
+	   * @param {Boolean} exists We only need to know if there are listeners.
+	   * @returns {Array|Boolean}
+	   * @api public
+	   */
+
+	  EventEmitter.prototype.listeners = function listeners(event, exists) {
+	    var evt = prefix ? prefix + event : event,
+	        available = this._events && this._events[evt];
+	    if (exists) return !!available;
+	    if (!available) return [];
+	    if (available.fn) return [available.fn];
+
+	    for (var i = 0, l = available.length, ee = new Array(l); i < l; i++) {
+	      ee[i] = available[i].fn;
+	    }
+
+	    return ee;
+	  };
+	  /**
+	   * Emit an event to all registered event listeners.
+	   *
+	   * @param {String} event The name of the event.
+	   * @returns {Boolean} Indication if we've emitted an event.
+	   * @api public
+	   */
+
+
+	  EventEmitter.prototype.emit = function emit(event, a1, a2, a3, a4, a5) {
+	    var evt = prefix ? prefix + event : event;
+	    if (!this._events || !this._events[evt]) return false;
+	    var listeners = this._events[evt],
+	        len = arguments.length,
+	        args,
+	        i;
+
+	    if ('function' === typeof listeners.fn) {
+	      if (listeners.once) this.removeListener(event, listeners.fn, undefined, true);
+
+	      switch (len) {
+	        case 1:
+	          return listeners.fn.call(listeners.context), true;
+
+	        case 2:
+	          return listeners.fn.call(listeners.context, a1), true;
+
+	        case 3:
+	          return listeners.fn.call(listeners.context, a1, a2), true;
+
+	        case 4:
+	          return listeners.fn.call(listeners.context, a1, a2, a3), true;
+
+	        case 5:
+	          return listeners.fn.call(listeners.context, a1, a2, a3, a4), true;
+
+	        case 6:
+	          return listeners.fn.call(listeners.context, a1, a2, a3, a4, a5), true;
+	      }
+
+	      for (i = 1, args = new Array(len - 1); i < len; i++) {
+	        args[i - 1] = arguments[i];
+	      }
+
+	      listeners.fn.apply(listeners.context, args);
+	    } else {
+	      var length = listeners.length,
+	          j;
+
+	      for (i = 0; i < length; i++) {
+	        if (listeners[i].once) this.removeListener(event, listeners[i].fn, undefined, true);
+
+	        switch (len) {
+	          case 1:
+	            listeners[i].fn.call(listeners[i].context);
+	            break;
+
+	          case 2:
+	            listeners[i].fn.call(listeners[i].context, a1);
+	            break;
+
+	          case 3:
+	            listeners[i].fn.call(listeners[i].context, a1, a2);
+	            break;
+
+	          default:
+	            if (!args) for (j = 1, args = new Array(len - 1); j < len; j++) {
+	              args[j - 1] = arguments[j];
+	            }
+	            listeners[i].fn.apply(listeners[i].context, args);
+	        }
+	      }
+	    }
+
+	    return true;
+	  };
+	  /**
+	   * Register a new EventListener for the given event.
+	   *
+	   * @param {String} event Name of the event.
+	   * @param {Functon} fn Callback function.
+	   * @param {Mixed} context The context of the function.
+	   * @api public
+	   */
+
+
+	  EventEmitter.prototype.on = function on(event, fn, context) {
+	    var listener = new EE(fn, context || this),
+	        evt = prefix ? prefix + event : event;
+	    if (!this._events) this._events = prefix ? {} : Object.create(null);
+	    if (!this._events[evt]) this._events[evt] = listener;else {
+	      if (!this._events[evt].fn) this._events[evt].push(listener);else this._events[evt] = [this._events[evt], listener];
+	    }
+	    return this;
+	  };
+	  /**
+	   * Add an EventListener that's only called once.
+	   *
+	   * @param {String} event Name of the event.
+	   * @param {Function} fn Callback function.
+	   * @param {Mixed} context The context of the function.
+	   * @api public
+	   */
+
+
+	  EventEmitter.prototype.once = function once(event, fn, context) {
+	    var listener = new EE(fn, context || this, true),
+	        evt = prefix ? prefix + event : event;
+	    if (!this._events) this._events = prefix ? {} : Object.create(null);
+	    if (!this._events[evt]) this._events[evt] = listener;else {
+	      if (!this._events[evt].fn) this._events[evt].push(listener);else this._events[evt] = [this._events[evt], listener];
+	    }
+	    return this;
+	  };
+	  /**
+	   * Remove event listeners.
+	   *
+	   * @param {String} event The event we want to remove.
+	   * @param {Function} fn The listener that we need to find.
+	   * @param {Mixed} context Only remove listeners matching this context.
+	   * @param {Boolean} once Only remove once listeners.
+	   * @api public
+	   */
+
+
+	  EventEmitter.prototype.removeListener = function removeListener(event, fn, context, once) {
+	    var evt = prefix ? prefix + event : event;
+	    if (!this._events || !this._events[evt]) return this;
+	    var listeners = this._events[evt],
+	        events = [];
+
+	    if (fn) {
+	      if (listeners.fn) {
+	        if (listeners.fn !== fn || once && !listeners.once || context && listeners.context !== context) {
+	          events.push(listeners);
+	        }
+	      } else {
+	        for (var i = 0, length = listeners.length; i < length; i++) {
+	          if (listeners[i].fn !== fn || once && !listeners[i].once || context && listeners[i].context !== context) {
+	            events.push(listeners[i]);
+	          }
+	        }
+	      }
+	    } //
+	    // Reset the array, or remove it completely if we have no more listeners.
+	    //
+
+
+	    if (events.length) {
+	      this._events[evt] = events.length === 1 ? events[0] : events;
+	    } else {
+	      delete this._events[evt];
+	    }
+
+	    return this;
+	  };
+	  /**
+	   * Remove all listeners or only the listeners for the specified event.
+	   *
+	   * @param {String} event The event want to remove all listeners for.
+	   * @api public
+	   */
+
+
+	  EventEmitter.prototype.removeAllListeners = function removeAllListeners(event) {
+	    if (!this._events) return this;
+	    if (event) delete this._events[prefix ? prefix + event : event];else this._events = prefix ? {} : Object.create(null);
+	    return this;
+	  }; //
+	  // Alias methods names because people roll like that.
+	  //
+
+
+	  EventEmitter.prototype.off = EventEmitter.prototype.removeListener;
+	  EventEmitter.prototype.addListener = EventEmitter.prototype.on; //
+	  // This function doesn't apply anymore.
+	  //
+
+	  EventEmitter.prototype.setMaxListeners = function setMaxListeners() {
+	    return this;
+	  }; //
+	  // Expose the prefix.
+	  //
+
+
+	  EventEmitter.prefixed = prefix; //
+	  // Expose the module.
+	  //
+
+	  {
+	    module.exports = EventEmitter;
+	  }
+	});
+
+	var regex = new RegExp('^((?:\\d+)?\\.?\\d+) *(' + ['milliseconds?', 'msecs?', 'ms', 'seconds?', 'secs?', 's', 'minutes?', 'mins?', 'm', 'hours?', 'hrs?', 'h', 'days?', 'd', 'weeks?', 'wks?', 'w', 'years?', 'yrs?', 'y'].join('|') + ')?$', 'i');
+	var second = 1000,
+	    minute = second * 60,
+	    hour = minute * 60,
+	    day = hour * 24,
+	    week = day * 7,
+	    year = day * 365;
+	/**
+	 * Parse a time string and return the number value of it.
+	 *
+	 * @param {String} ms Time string.
+	 * @returns {Number}
+	 * @api private
+	 */
+
+	var millisecond = function millisecond(ms) {
+	  var type = typeof ms,
+	      amount,
+	      match;
+	  if ('number' === type) return ms;else if ('string' !== type || '0' === ms || !ms) return 0;else if (+ms) return +ms; //
+	  // We are vulnerable to the regular expression denial of service (ReDoS).
+	  // In order to mitigate this we don't parse the input string if it is too long.
+	  // See https://nodesecurity.io/advisories/46.
+	  //
+
+	  if (ms.length > 10000 || !(match = regex.exec(ms))) return 0;
+	  amount = parseFloat(match[1]);
+
+	  switch (match[2].toLowerCase()) {
+	    case 'years':
+	    case 'year':
+	    case 'yrs':
+	    case 'yr':
+	    case 'y':
+	      return amount * year;
+
+	    case 'weeks':
+	    case 'week':
+	    case 'wks':
+	    case 'wk':
+	    case 'w':
+	      return amount * week;
+
+	    case 'days':
+	    case 'day':
+	    case 'd':
+	      return amount * day;
+
+	    case 'hours':
+	    case 'hour':
+	    case 'hrs':
+	    case 'hr':
+	    case 'h':
+	      return amount * hour;
+
+	    case 'minutes':
+	    case 'minute':
+	    case 'mins':
+	    case 'min':
+	    case 'm':
+	      return amount * minute;
+
+	    case 'seconds':
+	    case 'second':
+	    case 'secs':
+	    case 'sec':
+	    case 's':
+	      return amount * second;
+
+	    default:
+	      return amount;
+	  }
+	};
+
+	var has = Object.prototype.hasOwnProperty;
+	/**
+	 * Timer instance.
+	 *
+	 * @constructor
+	 * @param {Object} timer New timer instance.
+	 * @param {Function} clear Clears the timer instance.
+	 * @param {Function} fn The functions that need to be executed.
+	 * @api private
+	 */
+
+	function Timer(timer, clear, fn) {
+	  this.clear = clear;
+	  this.timer = timer;
+	  this.fns = [fn];
+	}
+	/**
+	 * Custom wrappers for the various of clear{whatever} functions. We cannot
+	 * invoke them directly as this will cause thrown errors in Google Chrome with
+	 * an Illegal Invocation Error
+	 *
+	 * @see #2
+	 * @type {Function}
+	 * @api private
+	 */
+
+
+	function unsetTimeout(id) {
+	  clearTimeout(id);
+	}
+
+	function unsetInterval(id) {
+	  clearInterval(id);
+	}
+
+	function unsetImmediate(id) {
+	  clearImmediate(id);
+	}
+	/**
+	 * Simple timer management.
+	 *
+	 * @constructor
+	 * @param {Mixed} context Context of the callbacks that we execute.
+	 * @api public
+	 */
+
+
+	function Tick(context) {
+	  if (!(this instanceof Tick)) return new Tick(context);
+	  this.timers = {};
+	  this.context = context || this;
+	}
+	/**
+	 * Return a function which will just iterate over all assigned callbacks and
+	 * optionally clear the timers from memory if needed.
+	 *
+	 * @param {String} name Name of the timer we need to execute.
+	 * @param {Boolean} clear Also clear from memory.
+	 * @returns {Function}
+	 * @api private
+	 */
+
+
+	Tick.prototype.tock = function ticktock(name, clear) {
+	  var tock = this;
+	  return function tickedtock() {
+	    if (!(name in tock.timers)) return;
+	    var timer = tock.timers[name],
+	        fns = timer.fns.slice(),
+	        l = fns.length,
+	        i = 0;
+	    if (clear) tock.clear(name);
+
+	    for (; i < l; i++) {
+	      fns[i].call(tock.context);
+	    }
+	  };
+	};
+	/**
+	 * Add a new timeout.
+	 *
+	 * @param {String} name Name of the timer.
+	 * @param {Function} fn Completion callback.
+	 * @param {Mixed} time Duration of the timer.
+	 * @returns {Tick}
+	 * @api public
+	 */
+
+
+	Tick.prototype.setTimeout = function timeout(name, fn, time) {
+	  var tick = this;
+
+	  if (tick.timers[name]) {
+	    tick.timers[name].fns.push(fn);
+	    return tick;
+	  }
+
+	  tick.timers[name] = new Timer(setTimeout(tick.tock(name, true), millisecond(time)), unsetTimeout, fn);
+	  return tick;
+	};
+	/**
+	 * Add a new interval.
+	 *
+	 * @param {String} name Name of the timer.
+	 * @param {Function} fn Completion callback.
+	 * @param {Mixed} time Interval of the timer.
+	 * @returns {Tick}
+	 * @api public
+	 */
+
+
+	Tick.prototype.setInterval = function interval(name, fn, time) {
+	  var tick = this;
+
+	  if (tick.timers[name]) {
+	    tick.timers[name].fns.push(fn);
+	    return tick;
+	  }
+
+	  tick.timers[name] = new Timer(setInterval(tick.tock(name), millisecond(time)), unsetInterval, fn);
+	  return tick;
+	};
+	/**
+	 * Add a new setImmediate.
+	 *
+	 * @param {String} name Name of the timer.
+	 * @param {Function} fn Completion callback.
+	 * @returns {Tick}
+	 * @api public
+	 */
+
+
+	Tick.prototype.setImmediate = function immediate(name, fn) {
+	  var tick = this;
+	  if ('function' !== typeof setImmediate) return tick.setTimeout(name, fn, 0);
+
+	  if (tick.timers[name]) {
+	    tick.timers[name].fns.push(fn);
+	    return tick;
+	  }
+
+	  tick.timers[name] = new Timer(setImmediate(tick.tock(name, true)), unsetImmediate, fn);
+	  return tick;
+	};
+	/**
+	 * Check if we have a timer set.
+	 *
+	 * @param {String} name
+	 * @returns {Boolean}
+	 * @api public
+	 */
+
+
+	Tick.prototype.active = function active(name) {
+	  return name in this.timers;
+	};
+	/**
+	 * Properly clean up all timeout references. If no arguments are supplied we
+	 * will attempt to clear every single timer that is present.
+	 *
+	 * @param {Arguments} ..args.. The names of the timeouts we need to clear
+	 * @returns {Tick}
+	 * @api public
+	 */
+
+
+	Tick.prototype.clear = function clear() {
+	  var args = arguments.length ? arguments : [],
+	      tick = this,
+	      timer,
+	      i,
+	      l;
+
+	  if (args.length === 1 && 'string' === typeof args[0]) {
+	    args = args[0].split(/[, ]+/);
+	  }
+
+	  if (!args.length) {
+	    for (timer in tick.timers) {
+	      if (has.call(tick.timers, timer)) args.push(timer);
+	    }
+	  }
+
+	  for (i = 0, l = args.length; i < l; i++) {
+	    timer = tick.timers[args[i]];
+	    if (!timer) continue;
+	    timer.clear(timer.timer);
+	    timer.fns = timer.timer = timer.clear = null;
+	    delete tick.timers[args[i]];
+	  }
+
+	  return tick;
+	};
+	/**
+	 * We will no longer use this module, prepare your self for global cleanups.
+	 *
+	 * @returns {Boolean}
+	 * @api public
+	 */
+
+
+	Tick.prototype.end = Tick.prototype.destroy = function end() {
+	  if (!this.context) return false;
+	  this.clear();
+	  this.context = this.timers = null;
+	  return true;
+	};
+	/**
+	 * Adjust a timeout or interval to a new duration.
+	 *
+	 * @returns {Tick}
+	 * @api public
+	 */
+
+
+	Tick.prototype.adjust = function adjust(name, time) {
+	  var interval,
+	      tick = this,
+	      timer = tick.timers[name];
+	  if (!timer) return tick;
+	  interval = timer.clear === unsetInterval;
+	  timer.clear(timer.timer);
+	  timer.timer = (interval ? setInterval : setTimeout)(tick.tock(name, !interval), millisecond(time));
+	  return tick;
+	}; //
+	// Expose the timer factory.
+	//
+
+
+	var tickTock = Tick;
+
+	/**
+	 * Parse a time string and return the number value of it.
+	 *
+	 * @param {String} ms Time string.
+	 * @returns {Number}
+	 * @api private
+	 */
+	var millisecond$1 = function millisecond(ms) {
+
+	  if ('string' !== typeof ms || '0' === ms || +ms) return +ms;
+	  var match = /^((?:\d+)?\.?\d+) *(milliseconds?|msecs?|ms|seconds?|secs?|s|minutes?|mins?|m|hours?|hrs?|h|days?|d|years?|yrs?|y)?$/i.exec(ms),
+	      second = 1000,
+	      minute = second * 60,
+	      hour = minute * 60,
+	      day = hour * 24,
+	      amount;
+	  if (!match) return 0;
+	  amount = parseFloat(match[1]);
+
+	  switch (match[2].toLowerCase()) {
+	    case 'days':
+	    case 'day':
+	    case 'd':
+	      return amount * day;
+
+	    case 'hours':
+	    case 'hour':
+	    case 'hrs':
+	    case 'hr':
+	    case 'h':
+	      return amount * hour;
+
+	    case 'minutes':
+	    case 'minute':
+	    case 'mins':
+	    case 'min':
+	    case 'm':
+	      return amount * minute;
+
+	    case 'seconds':
+	    case 'second':
+	    case 'secs':
+	    case 'sec':
+	    case 's':
+	      return amount * second;
+
+	    default:
+	      return amount;
+	  }
+	};
+
+	/**
+	 * Wrap callbacks to prevent double execution.
+	 *
+	 * @param {Function} fn Function that should only be called once.
+	 * @returns {Function} A wrapped callback which prevents execution.
+	 * @api public
+	 */
+
+	var oneTime = function one(fn) {
+	  var called = 0,
+	      value;
+	  /**
+	   * The function that prevents double execution.
+	   *
+	   * @api private
+	   */
+
+	  function onetime() {
+	    if (called) return value;
+	    called = 1;
+	    value = fn.apply(this, arguments);
+	    fn = null;
+	    return value;
+	  } //
+	  // To make debugging more easy we want to use the name of the supplied
+	  // function. So when you look at the functions that are assigned to event
+	  // listeners you don't see a load of `onetime` functions but actually the
+	  // names of the functions that this module will call.
+	  //
+
+
+	  onetime.displayName = fn.displayName || fn.name || onetime.displayName || onetime.name;
+	  return onetime;
+	};
+
+	// 'use strict'; //<-- Root of all evil, causes thrown errors on readyOnly props.
+	var has$1 = Object.prototype.hasOwnProperty,
+	    slice = Array.prototype.slice;
+	/**
+	 * Copy all readable properties from an Object or function and past them on the
+	 * object.
+	 *
+	 * @param {Object} obj The object we should paste everything on.
+	 * @returns {Object} obj
+	 * @api private
+	 */
+
+	function copypaste(obj) {
+	  var args = slice.call(arguments, 1),
+	      i = 0,
+	      prop;
+
+	  for (; i < args.length; i++) {
+	    if (!args[i]) continue;
+
+	    for (prop in args[i]) {
+	      if (!has$1.call(args[i], prop)) continue;
+	      obj[prop] = args[i][prop];
+	    }
+	  }
+
+	  return obj;
+	}
+	/**
+	 * A proper mixin function that respects getters and setters.
+	 *
+	 * @param {Object} obj The object that should receive all properties.
+	 * @returns {Object} obj
+	 * @api private
+	 */
+
+
+	function mixin(obj) {
+	  if ('function' !== typeof Object.getOwnPropertyNames || 'function' !== typeof Object.defineProperty || 'function' !== typeof Object.getOwnPropertyDescriptor) {
+	    return copypaste.apply(null, arguments);
+	  } //
+	  // We can safely assume that if the methods we specify above are supported
+	  // that it's also save to use Array.forEach for iteration purposes.
+	  //
+
+
+	  slice.call(arguments, 1).forEach(function forEach(o) {
+	    Object.getOwnPropertyNames(o).forEach(function eachAttr(attr) {
+	      Object.defineProperty(obj, attr, Object.getOwnPropertyDescriptor(o, attr));
+	    });
+	  });
+	  return obj;
+	}
+	/**
+	 * Detect if a given parent is constructed in strict mode so we can force the
+	 * child in to the same mode. It detects the strict mode by accessing properties
+	 * on the function that are forbidden in strict mode:
+	 *
+	 * - `caller`
+	 * - `callee`
+	 * - `arguments`
+	 *
+	 * Forcing the a thrown TypeError.
+	 *
+	 * @param {Function} parent Parent constructor
+	 * @returns {Function} The child constructor
+	 * @api private
+	 */
+
+
+	function mode(parent) {
+	  try {
+	    var e = parent.caller || parent.arguments || parent.callee;
+	    return function child() {
+	      return parent.apply(this, arguments);
+	    };
+	  } catch (e) {}
+
+	  return function child() {
+
+	    return parent.apply(this, arguments);
+	  };
+	} //
+	// Helper function to correctly set up the prototype chain, for subclasses.
+	// Similar to `goog.inherits`, but uses a hash of prototype properties and
+	// class properties to be extended.
+	//
+
+
+	var extendible = function extend(protoProps, staticProps) {
+	  var parent = this,
+	      child; //
+	  // The constructor function for the new subclass is either defined by you
+	  // (the "constructor" property in your `extend` definition), or defaulted
+	  // by us to simply call the parent's constructor.
+	  //
+
+	  if (protoProps && has$1.call(protoProps, 'constructor')) {
+	    child = protoProps.constructor;
+	  } else {
+	    child = mode(parent);
+	  } //
+	  // Set the prototype chain to inherit from `parent`, without calling
+	  // `parent`'s constructor function.
+	  //
+
+
+	  function Surrogate() {
+	    this.constructor = child;
+	  }
+
+	  Surrogate.prototype = parent.prototype;
+	  child.prototype = new Surrogate(); //
+	  // Add prototype properties (instance properties) to the subclass,
+	  // if supplied.
+	  //
+
+	  if (protoProps) mixin(child.prototype, protoProps); //
+	  // Add static properties to the constructor function, if supplied.
+	  //
+
+	  copypaste(child, parent, staticProps); //
+	  // Set a convenience property in case the parent's prototype is needed later.
+	  //
+
+	  child.__super__ = parent.prototype;
+	  return child;
+	};
+
+	/**
+	 * Returns a function that when invoked executes all the listeners of the
+	 * given event with the given arguments.
+	 *
+	 * @returns {Function} The function that emits all the things.
+	 * @api public
+	 */
+
+	var emits = function emits() {
+	  var self = this,
+	      parser;
+
+	  for (var i = 0, l = arguments.length, args = new Array(l); i < l; i++) {
+	    args[i] = arguments[i];
+	  } //
+	  // If the last argument is a function, assume that it's a parser.
+	  //
+
+
+	  if ('function' !== typeof args[args.length - 1]) return function emitter() {
+	    for (var i = 0, l = arguments.length, arg = new Array(l); i < l; i++) {
+	      arg[i] = arguments[i];
+	    }
+
+	    return self.emit.apply(self, args.concat(arg));
+	  };
+	  parser = args.pop();
+	  /**
+	   * The actual function that emits the given event. It returns a boolean
+	   * indicating if the event was emitted.
+	   *
+	   * @returns {Boolean}
+	   * @api public
+	   */
+
+	  return function emitter() {
+	    for (var i = 0, l = arguments.length, arg = new Array(l + 1); i < l; i++) {
+	      arg[i + 1] = arguments[i];
+	    }
+	    /**
+	     * Async completion method for the parser.
+	     *
+	     * @param {Error} err Optional error when parsing failed.
+	     * @param {Mixed} returned Emit instructions.
+	     * @api private
+	     */
+
+
+	    arg[0] = function next(err, returned) {
+	      if (err) return self.emit('error', err);
+	      arg = returned === undefined ? arg.slice(1) : returned === null ? [] : returned;
+	      self.emit.apply(self, args.concat(arg));
+	    };
+
+	    parser.apply(self, arg);
+	    return true;
+	  };
+	};
+
+	/**
+	 * Return a function which will process changes on the instance based on the
+	 * object that is provided and emit a dedicated "change" event.
+	 *
+	 * @param {String} suffix The suffix for the event we emit.
+	 * @returns {Function}
+	 * @api public
+	 */
+
+	var modification = function modification(suffix) {
+	  suffix = arguments.length ? suffix : '';
+	  /**
+	   * Changes processor.
+	   *
+	   * @param {Object} changed Properties that have to be changed.
+	   * @returns {That} What ever the value of `this` is.
+	   * @api public
+	   */
+
+	  return function change(changed) {
+	    var currently,
+	        previously,
+	        that = this,
+	        key;
+	    if (!changed) return that;
+
+	    for (key in changed) {
+	      if (key in that && that[key] !== changed[key]) {
+	        currently = changed[key];
+	        previously = that[key];
+	        that[key] = currently;
+	        that.emit(key + suffix, currently, previously);
+	      }
+	    }
+
+	    return that;
+	  };
+	};
+
+	/**
+	 * Generate a somewhat unique UUID.
+	 *
+	 * @see stackoverflow.com/q/105034
+	 * @returns {String} UUID.
+	 * @api private
+	 */
+
+
+	function UUID() {
+	  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function gen(c) {
+	    var random = Math.random() * 16 | 0,
+	        value = c !== 'x' ? random & 0x3 | 0x8 : random;
+	    return value.toString(16);
+	  });
+	}
+	/**
+	 * A nope function for when people don't want message acknowledgements. Because
+	 * they don't care about CAP.
+	 *
+	 * @api private
+	 */
+
+
+	function nope() {}
+	/**
+	 * Representation of a single raft node in the cluster.
+	 *
+	 * Options:
+	 *
+	 * - `address`: An unique id of this given node.
+	 * - `heartbeat`: Heartbeat timeout.
+	 * - `election min`: Minimum election timeout.
+	 * - `election max`: Maximum election timeout.
+	 * - `threshold`: Threshold when the heartbeat RTT is close to the election
+	 *   timeout.
+	 * - `Log`: A Log constructor that should be used to store commit logs.
+	 * - `state`: Our initial state. This is a private property and should not be
+	 *   set you unless you know what your are doing but as you want to use this
+	 *   property I highly doubt that that..
+	 *
+	 * Please note, when adding new options make sure that you also update the
+	 * `Raft#join` method so it will correctly copy the new option to the clone as
+	 * well.
+	 *
+	 * @constructor
+	 * @param {Mixed} address Unique address, id or name of this given raft node.
+	 * @param {Object} options Raft configuration.
+	 * @api public
+	 */
+
+
+	function Raft(address, options) {
+	  var raft = this;
+	  if (!(raft instanceof Raft)) return new Raft(options);
+	  options = options || {};
+	  if ('object' === typeof address) options = address;else if (!options.address) options.address = address;
+	  raft.election = {
+	    min: millisecond$1(options['election min'] || '150 ms'),
+	    max: millisecond$1(options['election max'] || '300 ms')
+	  };
+	  raft.beat = millisecond$1(options.heartbeat || '50 ms');
+	  raft.votes = {
+	    for: null,
+	    // Who did we vote for in this current term.
+	    granted: 0 // How many votes we're granted to us.
+
+	  };
+	  raft.write = raft.write || options.write || null;
+	  raft.threshold = options.threshold || 0.8;
+	  raft.address = options.address || UUID();
+	  raft.timers = new tickTock(raft);
+	  raft.Log = options.Log;
+	  raft.latency = 0;
+	  raft.log = null;
+	  raft.nodes = []; //
+	  // Raft §5.2:
+	  //
+	  // When a server starts, it's always started as Follower and it will remain in
+	  // this state until receive a message from a Leader or Candidate.
+	  //
+
+	  raft.state = options.state || Raft.FOLLOWER; // Our current state.
+
+	  raft.leader = ''; // Leader in our cluster.
+
+	  raft.term = 0; // Our current term.
+
+	  raft._initialize(options);
+	} //
+	// Add some sugar and spice and everything nice. Oh, and also inheritance.
+	//
+
+
+	Raft.extend = extendible;
+	Raft.prototype = new eventemitter3();
+	Raft.prototype.constructor = Raft; //
+	// Add some methods which are best done using modules.
+	//
+
+	Raft.prototype.emits = emits;
+	Raft.prototype.change = modification(' change');
+	/**
+	 * Raft §5.1:
+	 *
+	 * A Raft can be in only one of the various states. The stopped state is not
+	 * something that is part of the Raft protocol but something we might want to
+	 * use internally while we're starting or shutting down our node. The following
+	 * states are generated:
+	 *
+	 * - STOPPED:   Assume we're dead.
+	 * - LEADER:    We're selected as leader process.
+	 * - CANDIDATE: We want to be promoted to leader.
+	 * - FOLLOWER:  We're just following a leader.
+	 * - CHILD:     A node that has been added using JOIN.
+	 *
+	 * @type {Number}
+	 * @private
+	 */
+
+	Raft.states = 'STOPPED,LEADER,CANDIDATE,FOLLOWER,CHILD'.split(',');
+
+	for (var s = 0; s < Raft.states.length; s++) {
+	  Raft[Raft.states[s]] = s;
+	}
+	/**
+	 * Initialize Raft and start listening to the various of events we're
+	 * emitting as we're quite chatty to provide the maximum amount of flexibility
+	 * and reconfigurability.
+	 *
+	 * @param {Object} options The configuration you passed in the constructor.
+	 * @api private
+	 */
+
+
+	Raft.prototype._initialize = function initializing(options) {
+	  var raft = this; //
+	  // Reset our vote as we're starting a new term. Votes only last one term.
+	  //
+
+	  raft.on('term change', function change() {
+	    raft.votes.for = null;
+	    raft.votes.granted = 0;
+	  }); //
+	  // Reset our times and start the heartbeat again. If we're promoted to leader
+	  // the heartbeat will automatically be broadcasted to users as well.
+	  //
+
+	  raft.on('state change', function change(state) {
+	    raft.timers.clear('heartbeat, election');
+	    raft.heartbeat(Raft.LEADER === raft.state ? raft.beat : raft.timeout());
+	    raft.emit(Raft.states[state].toLowerCase());
+	  }); //
+	  // Receive incoming messages and process them.
+	  //
+
+	  raft.on('data', function incoming(packet, write) {
+	    write = write || nope;
+	    var reason;
+
+	    if ('object' !== raft.type(packet)) {
+	      reason = 'Invalid packet received';
+	      raft.emit('error', new Error(reason));
+	      return write(raft.packet('error', reason));
+	    } //
+	    // Raft §5.1:
+	    //
+	    // Applies to all states. If a response contains a higher term then our
+	    // current term need to change our state to FOLLOWER and set the received
+	    // term.
+	    //
+	    // If the raft receives a request with a stale term number it should be
+	    // rejected.
+	    //
+
+
+	    if (packet.term > raft.term) {
+	      raft.change({
+	        leader: Raft.LEADER === packet.state ? packet.address : packet.leader || raft.leader,
+	        state: Raft.FOLLOWER,
+	        term: packet.term
+	      });
+	    } else if (packet.term < raft.term) {
+	      reason = 'Stale term detected, received `' + packet.term + '` we are at ' + raft.term;
+	      raft.emit('error', new Error(reason));
+	      return write(raft.packet('error', reason));
+	    } //
+	    // Raft §5.2:
+	    //
+	    // If we receive a message from someone who claims to be leader and shares
+	    // our same term while we're in candidate mode we will recognize their
+	    // leadership and return as follower.
+	    //
+	    // If we got this far we already know that our terms are the same as it
+	    // would be changed or prevented above..
+	    //
+
+
+	    if (Raft.LEADER === packet.state) {
+	      if (Raft.FOLLOWER !== raft.state) raft.change({
+	        state: Raft.FOLLOWER
+	      });
+	      if (packet.address !== raft.leader) raft.change({
+	        leader: packet.address
+	      }); //
+	      // Always when we receive an message from the Leader we need to reset our
+	      // heartbeat.
+	      //
+
+	      raft.heartbeat(raft.timeout());
+	    }
+
+	    switch (packet.type) {
+	      //
+	      // Raft §5.2:
+	      // Raft §5.4:
+	      //
+	      // A raft asked us to vote on them. We can only vote to them if they
+	      // represent a higher term (and last log term, last log index).
+	      //
+	      case 'vote':
+	        //
+	        // The term of the vote is bigger then ours so we need to update it. If
+	        // it's the same and we already voted, we need to deny the vote.
+	        //
+	        if (raft.votes.for && raft.votes.for !== packet.address) {
+	          raft.emit('vote', packet, false);
+	          return write(raft.packet('voted', {
+	            granted: false
+	          }));
+	        } //
+	        // If we maintain a log, check if the candidates log is as up to date as
+	        // ours.
+	        //
+	        // @TODO point to index of last commit entry.
+	        // @TODO point to term of last commit entry.
+	        //
+
+
+	        if (raft.log && packet.last && (raft.log.index > packet.last.index || raft.term > packet.last.term)) {
+	          raft.emit('vote', packet, false);
+	          return write(raft.packet('voted', {
+	            granted: false
+	          }));
+	        } //
+	        // We've made our decision, we haven't voted for this term yet and this
+	        // candidate came in first so it gets our vote as all requirements are
+	        // met.
+	        //
+
+
+	        raft.votes.for = packet.address;
+	        raft.emit('vote', packet, true);
+	        raft.change({
+	          leader: packet.address,
+	          term: packet.term
+	        });
+	        write(raft.packet('voted', {
+	          granted: true
+	        })); //
+	        // We've accepted someone as potential new leader, so we should reset
+	        // our heartbeat to prevent this raft from timing out after voting.
+	        // Which would again increment the term causing us to be next CANDIDATE
+	        // and invalidates the request we just got, so that's silly willy.
+	        //
+
+	        raft.heartbeat(raft.timeout());
+	        break;
+	      //
+	      // A new incoming vote.
+	      //
+
+	      case 'voted':
+	        //
+	        // Only accepts votes while we're still in a CANDIDATE state.
+	        //
+	        if (Raft.CANDIDATE !== raft.state) {
+	          return write(raft.packet('error', 'No longer a candidate, ignoring vote'));
+	        } //
+	        // Increment our received votes when our voting request has been
+	        // granted by the raft that received the data.
+	        //
+
+
+	        if (packet.data.granted) {
+	          raft.votes.granted++;
+	        } //
+	        // Check if we've received the minimal amount of votes required for this
+	        // current voting round to be considered valid.
+	        //
+
+
+	        if (raft.quorum(raft.votes.granted)) {
+	          raft.change({
+	            leader: raft.address,
+	            state: Raft.LEADER
+	          }); //
+	          // Send a heartbeat message to all connected clients.
+	          //
+
+	          raft.message(Raft.FOLLOWER, raft.packet('append'));
+	        } //
+	        // Empty write, nothing to do.
+	        //
+
+
+	        write();
+	        break;
+
+	      case 'error':
+	        raft.emit('error', new Error(packet.data));
+	        break;
+	      //
+	      // Remark: Are we assuming we are getting an appendEntries from the
+	      // leader and comparing and appending our log?
+	      //
+
+	      case 'append':
+	        break;
+	      //
+	      // Remark: So does this get emit when we need to write our OWN log?
+	      //
+
+	      case 'log':
+	        break;
+	      //
+	      // RPC command
+	      //
+
+	      case 'exec':
+	        break;
+	      //
+	      // Unknown event, we have no idea how to process this so we're going to
+	      // return an error.
+	      //
+
+	      default:
+	        if (raft.listeners('rpc').length) {
+	          raft.emit('rpc', packet, write);
+	        } else {
+	          write(raft.packet('error', 'Unknown message type: ' + packet.type));
+	        }
+
+	    }
+	  }); //
+	  // We do not need to execute the rest of the functionality below as we're
+	  // currently running as "child" raft of the cluster not as the "root" raft.
+	  //
+
+	  if (Raft.CHILD === raft.state) return raft.emit('initialize'); //
+	  // Setup the log & appends. Assume that if we're given a function log that it
+	  // needs to be initialized as it requires access to our raft instance so it
+	  // can read our information like our leader, state, term etc.
+	  //
+
+	  if ('function' === raft.type(raft.Log)) {
+	    raft.log = new raft.Log(raft, options);
+	  }
+	  /**
+	   * The raft is now listening to events so we can start our heartbeat timeout.
+	   * So that if we don't hear anything from a leader we can promote our selfs to
+	   * a candidate state.
+	   *
+	   * Start listening listening for heartbeats when implementors are also ready
+	   * with setting up their code.
+	   *
+	   * @api private
+	   */
+
+
+	  function initialize(err) {
+	    if (err) return raft.emit('error', err);
+	    raft.emit('initialize');
+	    raft.heartbeat(raft.timeout());
+	  }
+
+	  if ('function' === raft.type(raft.initialize)) {
+	    if (raft.initialize.length === 2) return raft.initialize(options, initialize);
+	    raft.initialize(options);
+	  }
+
+	  initialize();
+	};
+	/**
+	 * Proper type checking.
+	 *
+	 * @param {Mixed} of Thing we want to know the type of.
+	 * @returns {String} The type.
+	 * @api private
+	 */
+
+
+	Raft.prototype.type = function type(of) {
+	  return Object.prototype.toString.call(of).slice(8, -1).toLowerCase();
+	};
+	/**
+	 * Check if we've reached our quorum (a.k.a. minimum amount of votes requires
+	 * for a voting round to be considered valid) for the given amount of votes.
+	 *
+	 * @param {Number} responses Amount of responses received.
+	 * @returns {Boolean}
+	 * @api public
+	 */
+
+
+	Raft.prototype.quorum = function quorum(responses) {
+	  if (!this.nodes.length || !responses) return false;
+	  return responses >= this.majority();
+	};
+	/**
+	 * The majority required to reach our the quorum.
+	 *
+	 * @returns {Number}
+	 * @api public
+	 */
+
+
+	Raft.prototype.majority = function majority() {
+	  return Math.ceil(this.nodes.length / 2) + 1;
+	};
+	/**
+	 * Attempt to run a function indefinitely until the callback is called.
+	 *
+	 * @param {Function} attempt Function that needs to be attempted.
+	 * @param {Function} fn Completion callback.
+	 * @param {Number} timeout Which timeout should we use.
+	 * @returns {Raft}
+	 * @api public
+	 */
+
+
+	Raft.prototype.indefinitely = function indefinitely(attempt, fn, timeout) {
+	  var uuid = UUID(),
+	      raft = this;
+
+	  (function again() {
+	    //
+	    // We need to force async execution here because we do not want to saturate
+	    // the event loop with sync executions. We know that it's important these
+	    // functions are retried indefinitely but if it's called synchronously we will
+	    // not have time to receive data or updates.
+	    //
+	    var next = oneTime(function force(err, data) {
+	      if (!raft.timers) return; // We're been destroyed, ignore all.
+
+	      raft.timers.setImmediate(uuid + '@async', function async() {
+	        if (err) {
+	          raft.emit('error', err);
+	          return again();
+	        }
+
+	        fn(data);
+	      });
+	    }); //
+	    // Ensure that the assigned callback has the same context as our raft.
+	    //
+
+	    attempt.call(raft, next);
+	    raft.timers.setTimeout(uuid, function timeoutfn() {
+	      next(new Error('Timed out, attempting to retry again'));
+	    }, +timeout || raft.timeout());
+	  })();
+
+	  return this;
+	};
+	/**
+	 * Start or update the heartbeat of the Raft. If we detect that we've received
+	 * a heartbeat timeout we will promote our selfs to a candidate to take over the
+	 * leadership.
+	 *
+	 * @param {String|Number} duration Time it would take for the heartbeat to timeout.
+	 * @returns {Raft}
+	 * @api private
+	 */
+
+
+	Raft.prototype.heartbeat = function heartbeat(duration) {
+	  var raft = this;
+	  duration = duration || raft.beat;
+
+	  if (raft.timers.active('heartbeat')) {
+	    raft.timers.adjust('heartbeat', duration);
+	    return raft;
+	  }
+
+	  raft.timers.setTimeout('heartbeat', function heartbeattimeout() {
+	    if (Raft.LEADER !== raft.state) {
+	      raft.emit('heartbeat timeout');
+	      return raft.promote();
+	    } //
+	    // According to the raft spec we should be sending empty append requests as
+	    // heartbeat. We want to emit an event so people can modify or inspect the
+	    // payload before we send it. It's also a good indication for when the
+	    // idle state of a LEADER as it didn't get any messages to append/commit to
+	    // the FOLLOWER'S.
+	    //
+
+
+	    var packet = raft.packet('append');
+	    raft.emit('heartbeat', packet);
+	    raft.message(Raft.FOLLOWER, packet).heartbeat(raft.beat);
+	  }, duration);
+	  return raft;
+	};
+	/**
+	 * Send a message to connected nodes within our cluster. The following messaging
+	 * patterns (who) are available:
+	 *
+	 * - Raft.LEADER   : Send a message to cluster's current leader.
+	 * - Raft.FOLLOWER : Send a message to all non leaders.
+	 * - Raft.CHILD    : Send a message to everybody.
+	 * - <address>     : Send a message to a raft based on the address.
+	 *
+	 * @param {Mixed} who Recipient of the message.
+	 * @param {Mixed} what The data we need to send.
+	 * @param {Function} when Completion callback
+	 * @returns {Raft}
+	 * @api public
+	 */
+
+
+	Raft.prototype.message = function message(who, what, when) {
+	  when = when || nope; //
+	  // If the "who" is undefined, the developer made an error somewhere. Tell them!
+	  //
+
+	  if (typeof who === 'undefined') {
+	    throw new Error('Cannot send message to `undefined`. Check your spelling!');
+	  }
+
+	  var output = {
+	    errors: {},
+	    results: {}
+	  },
+	      length = this.nodes.length,
+	      errors = false,
+	      latency = [],
+	      raft = this,
+	      nodes = [],
+	      i = 0;
+
+	  switch (who) {
+	    case Raft.LEADER:
+	      for (; i < length; i++) if (raft.leader === raft.nodes[i].address) {
+	        nodes.push(raft.nodes[i]);
+	      }
+
+	      break;
+
+	    case Raft.FOLLOWER:
+	      for (; i < length; i++) if (raft.leader !== raft.nodes[i].address) {
+	        nodes.push(raft.nodes[i]);
+	      }
+
+	      break;
+
+	    case Raft.CHILD:
+	      Array.prototype.push.apply(nodes, raft.nodes);
+	      break;
+
+	    default:
+	      for (; i < length; i++) if (who === raft.nodes[i].address) {
+	        nodes.push(raft.nodes[i]);
+	      }
+
+	  }
+	  /**
+	   * A small wrapper to force indefinitely sending of a certain packet.
+	   *
+	   * @param {Raft} client Raft we need to write a message to.
+	   * @param {Object} data Message that needs to be send.
+	   * @api private
+	   */
+
+
+	  function wrapper(client, data) {
+	    var start = +new Date();
+	    client.write(data, function written(err, data) {
+	      latency.push(+new Date() - start); //
+	      // Add the error or output to our `output` object to be
+	      // passed to the callback when all the writing is done.
+	      //
+
+	      if (err) {
+	        errors = true;
+	        output.errors[client.address] = err;
+	      } else {
+	        output.results[client.address] = data;
+	      } //
+	      // OK, so this is the strange part here. We've broadcasted messages and
+	      // got replies back. This reply contained data so we need to process it.
+	      // What if the data is incorrect? Then we have no way at the moment to
+	      // send back reply to a reply to the server.
+	      //
+
+
+	      if (err) raft.emit('error', err);else if (data) raft.emit('data', data); //
+	      // Messaging has been completed.
+	      //
+
+	      if (latency.length === length) {
+	        raft.timing(latency);
+	        when(errors ? output.errors : undefined, output.results);
+	        latency.length = nodes.length = 0;
+	        output = null;
+	      }
+	    });
+	  }
+
+	  length = nodes.length;
+	  i = 0;
+
+	  for (; i < length; i++) {
+	    wrapper(nodes[i], what);
+	  }
+
+	  return raft;
+	};
+	/**
+	 * Generate the various of timeouts.
+	 *
+	 * @returns {Number}
+	 * @api private
+	 */
+
+
+	Raft.prototype.timeout = function timeout() {
+	  var times = this.election;
+	  return Math.floor(Math.random() * (times.max - times.min + 1) + times.min);
+	};
+	/**
+	 * Calculate if our average latency causes us to come dangerously close to the
+	 * minimum election timeout.
+	 *
+	 * @param {Array} latency Latency of the last broadcast.
+	 * @param {Boolean} Success-fully calculated the threshold.
+	 * @api private
+	 */
+
+
+	Raft.prototype.timing = function timing(latency) {
+	  var raft = this,
+	      sum = 0,
+	      i = 0;
+	  if (Raft.STOPPED === raft.state) return false;
+
+	  for (; i < latency.length; i++) {
+	    sum += latency[i];
+	  }
+
+	  raft.latency = Math.floor(sum / latency.length);
+
+	  if (raft.latency > raft.election.min * raft.threshold) {
+	    raft.emit('threshold');
+	  }
+
+	  return true;
+	};
+	/**
+	 * Raft §5.2:
+	 *
+	 * We've detected a timeout from the leaders heartbeats and need to start a new
+	 * election for leadership. We increment our current term, set the CANDIDATE
+	 * state, vote our selfs and ask all others rafts to vote for us.
+	 *
+	 * @returns {Raft}
+	 * @api private
+	 */
+
+
+	Raft.prototype.promote = function promote() {
+	  var raft = this;
+	  raft.change({
+	    state: Raft.CANDIDATE,
+	    // We're now a candidate,
+	    term: raft.term + 1,
+	    // but only for this term.
+	    leader: '' // We no longer have a leader.
+
+	  }); //
+	  // Candidates are always biased and vote for them selfs first before sending
+	  // out a voting request to all other rafts in the cluster.
+	  //
+
+	  raft.votes.for = raft.address;
+	  raft.votes.granted = 1; //
+	  // Broadcast the voting request to all connected rafts in your private
+	  // cluster.
+	  //
+
+	  var packet = raft.packet('vote');
+	  raft.message(Raft.FOLLOWER, raft.packet('vote')); //
+	  // Set the election timeout. This gives the rafts some time to reach
+	  // consensuses about who they want to vote for. If no consensus has been
+	  // reached within the set timeout we will attempt it again.
+	  //
+
+	  raft.timers.clear('heartbeat, election').setTimeout('election', raft.promote, raft.timeout());
+	  return raft;
+	};
+	/**
+	 * Wrap the outgoing messages in an object with additional required data.
+	 *
+	 * @param {String} type Message type we're trying to send.
+	 * @param {Mixed} data Data to be transfered.
+	 * @returns {Object} Packet.
+	 * @api private
+	 */
+
+
+	Raft.prototype.packet = function wrap(type, data) {
+	  var raft = this,
+	      packet = {
+	    state: raft.state,
+	    // Are we're a leader, candidate or follower.
+	    term: raft.term,
+	    // Our current term so we can find mis matches.
+	    address: raft.address,
+	    // Address of the sender.
+	    type: type,
+	    // Message type.
+	    leader: raft.leader // Who is our leader.
+
+	  }; //
+	  // If we have logging and state replication enabled we also need to send this
+	  // additional data so we can use it determine the state of this raft.
+	  //
+	  // @TODO point to index of last commit entry.
+	  // @TODO point to term of last commit entry.
+	  //
+
+	  if (raft.log) packet.last = {
+	    term: raft.term,
+	    index: raft.log.index
+	  };
+	  if (arguments.length === 2) packet.data = data;
+	  return packet;
+	};
+	/**
+	 * Create a clone of the current instance with the same configuration. Ideally
+	 * for creating connected nodes in a cluster.. And let that be something we're
+	 * planning on doing.
+	 *
+	 * @param {Object} options Configuration that should override the default config.
+	 * @returns {Raft} The newly created instance.
+	 * @api public
+	 */
+
+
+	Raft.prototype.clone = function clone(options) {
+	  options = options || {};
+	  var raft = this,
+	      node = {
+	    'Log': raft.Log,
+	    'election max': raft.election.max,
+	    'election min': raft.election.min,
+	    'heartbeat': raft.beat,
+	    'threshold': raft.threshold
+	  },
+	      key;
+
+	  for (key in node) {
+	    if (key in options || !node.hasOwnProperty(key)) continue;
+	    options[key] = node[key];
+	  }
+
+	  return new raft.constructor(options);
+	};
+	/**
+	 * A new raft is about to join the cluster. So we need to upgrade the
+	 * configuration of every single raft.
+	 *
+	 * @param {String} address The address of the raft that is connected.
+	 * @param {Function} write A method that we use to write data.
+	 * @returns {Raft} The raft we created and that joined our cluster.
+	 * @api public
+	 */
+
+
+	Raft.prototype.join = function join(address, write) {
+	  var raft = this;
+
+	  if ('function' === raft.type(address)) {
+	    write = address;
+	    address = null;
+	  } //
+	  // You shouldn't be able to join the cluster as your self. So we're going to
+	  // add a really simple address check here. Return nothing so people can actually
+	  // check if a raft has been added.
+	  //
+
+
+	  if (raft.address === address) return;
+	  var node = raft.clone({
+	    write: write,
+	    // Optional function that receives our writes.
+	    address: address,
+	    // A custom address for the raft we added.
+	    state: Raft.CHILD // We are a raft in the cluster.
+
+	  });
+	  node.once('end', function end() {
+	    raft.leave(node);
+	  }, raft);
+	  raft.nodes.push(node);
+	  raft.emit('join', node);
+	  return node;
+	};
+	/**
+	 * Remove a raft from the cluster.
+	 *
+	 * @param {String} address The address of the raft that should be removed.
+	 * @returns {Raft} The raft that we removed.
+	 * @api public
+	 */
+
+
+	Raft.prototype.leave = function leave(address) {
+	  var raft = this,
+	      index = -1,
+	      node;
+
+	  for (var i = 0; i < raft.nodes.length; i++) {
+	    if (raft.nodes[i] === address || raft.nodes[i].address === address) {
+	      node = raft.nodes[i];
+	      index = i;
+	      break;
+	    }
+	  }
+
+	  if (~index && node) {
+	    raft.nodes.splice(index, 1);
+	    if (node.end) node.end();
+	    raft.emit('leave', node);
+	  }
+
+	  return node;
+	};
+	/**
+	 * This Raft needs to be shut down.
+	 *
+	 * @returns {Boolean} Successful destruction.
+	 * @api public
+	 */
+
+
+	Raft.prototype.end = Raft.prototype.destroy = function end() {
+	  var raft = this;
+	  if (Raft.STOPPED === raft.state) return false;
+	  raft.state = Raft.STOPPED;
+	  if (raft.nodes.length) for (var i = 0; i < raft.nodes.length; i++) {
+	    raft.leave(raft.nodes[i]);
+	  }
+	  raft.emit('end');
+	  raft.timers.end();
+	  raft.removeAllListeners();
+	  if (raft.log) raft.log.end();
+	  raft.timers = raft.log = raft.Log = raft.beat = raft.election = null;
+	  return true;
+	}; //
+	// Expose the module interface.
+	//
+
+
+	var liferaft = Raft;
+
 	/*
 	 * introduction
 	 */
@@ -1097,7 +2842,8 @@ var ht = (function (exports) {
 	//   socket: null,
 	//   channel: null,
 	//   streetId: null,
-	//   key: null
+	//   key: null,
+	//   raft: null
 	// }
 	// search license plates
 ;
@@ -1217,6 +2963,15 @@ var ht = (function (exports) {
 	      case 'SFS:ping':
 	        // console.log('SFS:ping', msg)
 	        console.log('beep: HONK');
+	        break;
+
+	      case 'SFS:raft':
+	        console.log('auto.packet:', msg.packet);
+
+	        var _lp = findByPlate(msg.id);
+
+	        _lp.raft.emit('data', msg.packet);
+
 	        break;
 
 	      case 'SFS:user_login':
@@ -1340,7 +3095,7 @@ var ht = (function (exports) {
 	  var plateId = '';
 	  var id = null;
 
-	  if (arguments.length === 3) {
+	  if (arguments.length === 2) {
 	    plateId = arguments[0];
 	    id = arguments[1];
 	  } else {
@@ -1353,8 +3108,86 @@ var ht = (function (exports) {
 	  });
 	  licensePlates[i].key = id;
 	}
+	/*
+	 * AUTO
+	 */
+
+	var Boat = liferaft.extend({
+	  socket: null,
+	  write: function write(packet, callback) {
+	    var lp = findByPlate(this.address);
+	    lp.channel.push('SFS:raft', {
+	      room: lp.streetId,
+	      plateId: this.address,
+	      packet: packet
+	    });
+	    listen(this.address, lp.streetId);
+	    callback();
+	  }
+	});
+
+	function newRaft(plateId, address) {
+	  var options = arguments[2] || {};
+	  var lp = findByPlate(plateId);
+	  lp.raft = new Boat(address.address, options);
+	  return auto;
+	}
+
+	function joinRaft()
+	/* plateId, address, write */
+	{
+	  var plateId = '';
+	  var address = null;
+	  var write = null;
+
+	  if (arguments.length === 3) {
+	    plateId = arguments[0];
+	    address = arguments[1];
+	    write = arguments[2];
+	  } else {
+	    plateId = exports.defaultLicensePlate;
+	    address = arguments[0];
+	    write = arguments[1];
+	  }
+
+	  var i = licensePlates.findIndex(function (lp) {
+	    return lp.id === plateId;
+	  });
+	  licensePlates[i].raft.join(address, write);
+	  return auto;
+	}
+
+	function onRaft()
+	/* plateId, listen, callback */
+	{
+	  var plateId = '';
+	  var listen = null;
+	  var callback = null;
+
+	  if (arguments.length === 3) {
+	    plateId = arguments[0];
+	    listen = arguments[1];
+	    callback = arguments[2];
+	  } else {
+	    plateId = exports.defaultLicensePlate;
+	    listen = arguments[0];
+	    callback = arguments[1];
+	  }
+
+	  var lp = findByPlate(plateId);
+	  lp.raft.on(listen, callback);
+	  return auto;
+	} // consensus algorithm
+
+
+	var auto = {
+	  "new": newRaft,
+	  join: joinRaft,
+	  on: onRaft
+	};
 
 	exports.ack = ack;
+	exports.auto = auto;
 	exports.beep = beep;
 	exports.checkpoint = checkpoint;
 	exports.exit = exit;

@@ -3,6 +3,7 @@
     <title>ht.auto()</title>
     <link href="themes/prism.css" rel="stylesheet" />
     <script src="libs/prism.js"></script>
+    <script src="bundle.js"></script>
   </head>
   <body style="margin: 0; color: #333; font-family: sans-serif; overflow: hidden;">
     <div style="max-width: 800px; margin: 0 auto; background: #eee; height: 100%; padding: 0 1em; position: relative; overflow: auto;">
@@ -13,18 +14,40 @@
         <h2 style="text-align: center;">METAHEAP</h2>
       </div>
       <h1 style="text-align: center;">ht.auto()</h1>
-      <h2>AUTO is the equivalent to RAFT.</h2>
-<pre><code class="language-a">BEEP --> TURN --> MOVE ... AUTO</code></pre>
-<pre><code class="language-js">let id = '0987654321' // license plate
-let freeway = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz" // road
+      <h2>AUTO is group consensus among peers. it uses the <a href="https://raft.github.io/" target="_blank">RAFT</a> consensus algorithm under the hood. this algorithm can be used to solve many of the problems that distributed systems present. such as reaching an agreement between a cluster of machines and then assigning tasks out to each one.</h2>
+      <pre><code class="language-a">BEEP --> TURN --> MOVE ... AUTO</code></pre>
+      <h2>here is code from three node.js servers:</h2>
+<pre><code class="language-js">let id1 = '1' // license plate
+let network1 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz" // road
+let address1 = ht.secret(26, network1)
 // --with--
-ht.mobile(id) // vehicle
-ht.lane(id, freeway) // transport
-ht.beep(id)
-// --or--
-ht.mobile(id).lane(freeway).beep()
-// --or--
-ht.move(id, freeway).beep()
+ht.move(id1, address1)
+ht.auto.new(id1, { address: address1 })
+
+ht.auto.on(id1, 'term change', (to, from) => {
+  console.log('were now running on term %s -- was %s', to, from)
+}).on('leader change', function (to, from) {
+  console.log('we have a new leader to: %s -- was %s', to, from)
+}).on('state change', function (to, from) {
+  console.log('we have a state to: %s -- was %s', to, from)
+})
+</code></pre>
+<pre><code class="language-js">let id2 = '2' // license plate
+let network2 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz" // road
+let address2 = ht.secret(26, network2)
+// --with--
+ht.move(id2, address2)
+ht.auto.new(id2, { address: address2 })
+ht.auto.join(id2, address1)
+</code></pre>
+<pre><code class="language-js">let id3 = '3' // license plate
+let network3 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz" // road
+let address3 = ht.secret(26, network3)
+// --with--
+ht.move(id3, address3)
+ht.auto.new(id3, { address: address3 })
+ht.auto.join(id3, address1)
+ht.auto.join(id3, address2)
 </code></pre>
 <pre><code class="language-css">// mobile: start...
 // lane: transporting...
@@ -33,12 +56,12 @@ ht.move(id, freeway).beep()
 // beep: HONK
 </code></pre>
       <ul style="font-size: 1.8em; font-family: monospace;">
+        <li><a href="/ht.auto.on.html">ht.auto.on()</a></li>
         <li><a href="/ht.auto.new.html">ht.auto.new()</a></li>
         <li><a href="/ht.auto.join.html">ht.auto.join()</a></li>
         <li><a href="/ht.auto.leave.html">ht.auto.leave()</a></li>
         <li><a href="/ht.auto.packet.html">ht.auto.packet()</a></li>
         <li><a href="/ht.auto.command.html">ht.auto.command()</a></li>
-        <li><a href="/ht.auto.on.html">ht.auto.on()</a></li>
       </ul>
       <h1 style="text-align: center;"><a href="/">UPWARD</a> (:</h1>
       <div style="border-top: 5px dashed;">
