@@ -338,6 +338,3 @@ export let auto = {
   join: joinRaft,
   on: onRaft
 }
-
-let metaheap = this
-export default metaheap

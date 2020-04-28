@@ -3200,13 +3200,11 @@ var ht = (function (exports) {
 	  join: joinRaft,
 	  on: onRaft
 	};
-	var metaheap = undefined;
 
 	exports.ack = ack;
 	exports.auto = auto;
 	exports.beep = beep;
 	exports.checkpoint = checkpoint;
-	exports.default = metaheap;
 	exports.exit = exit;
 	exports.findByPlate = findByPlate;
 	exports.key = key;
