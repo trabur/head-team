@@ -3,12 +3,16 @@ import resolve from '@rollup/plugin-node-resolve';
 import commonjs from 'rollup-plugin-commonjs';
 
 const config = {
-	input: 'index.cjs',
+	input: 'index.js',
 	output: [
 		{
 			file: 'bundle.js',
-      format: 'cjs'
+      format: 'iife'
 		},
+		{
+			file: 'node.js',
+      format: 'cjs'
+		}
 	],
 	plugins: [
     resolve({browser: true }),
