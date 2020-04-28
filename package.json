@@ -2,7 +2,6 @@
   "name": "metaheap",
   "version": "1.0.0",
   "description": "",
-  "type": "module",
   "main": "node.js",
   "scripts": {
     "bundle": "rollup -c rollup.config.js --name ht"
