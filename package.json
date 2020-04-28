@@ -6,7 +6,8 @@
   "scripts": {
     "bundle": "rollup -c rollup.config.js --name ht --format iife"
   },
-  "author": "",
+  "type": "module",
+  "author": "https://istrav.com",
   "homepage": "https://metaheap.io",
   "dependencies": {
     "babel-preset-env": "^1.7.0",
