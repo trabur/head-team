@@ -3121,7 +3121,6 @@ var ht = (function (exports) {
 	      plateId: this.address,
 	      packet: packet
 	    });
-	    listen(this.address, lp.streetId);
 	    callback();
 	  }
 	});
@@ -3129,6 +3128,7 @@ var ht = (function (exports) {
 	function newRaft(plateId, address) {
 	  var options = arguments[2] || {};
 	  var lp = findByPlate(plateId);
+	  listen(plateId, address.address);
 	  lp.raft = new Boat(address.address, options);
 	  return auto;
 	}

@@ -271,7 +271,6 @@ var Boat = Raft.extend({
       plateId: this.address,
       packet
     })
-    listen(this.address, lp.streetId)
     callback()
   }
 })
@@ -279,6 +278,7 @@ var Boat = Raft.extend({
 function newRaft(plateId, address) {
   let options = arguments[2] || {}
   let lp = findByPlate(plateId)
+  listen(plateId, address.address)
   lp.raft = new Boat(address.address, options);
   return auto
 }
