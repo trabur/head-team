@@ -7,7 +7,8 @@ const config = {
 	output: [
 		{
 			file: 'bundle.js',
-			format: 'cjs',
+      format: 'cjs',
+      exports: 'named'
 		},
 	],
 	plugins: [
