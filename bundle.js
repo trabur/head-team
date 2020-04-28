@@ -3115,21 +3115,36 @@ var ht = (function (exports) {
 	var Boat = liferaft.extend({
 	  socket: null,
 	  write: function write(packet, callback) {
-	    var lp = findByPlate(this.address);
+	    var config = packet.address.split('...'); // from: new Boat()
+
+	    var lp = findByPlate(config[0]);
 	    lp.channel.push('SFS:raft', {
-	      room: lp.streetId,
-	      plateId: this.address,
+	      plateId: config[0],
+	      room: config[1],
 	      packet: packet
 	    });
 	    callback();
 	  }
 	});
 
-	function newRaft(plateId, address) {
+	function newRaft()
+	/* plateId, address */
+	{
+	  var plateId = '';
+	  var address = null;
+
+	  if (arguments.length === 2) {
+	    plateId = arguments[0];
+	    address = arguments[1];
+	  } else {
+	    plateId = exports.defaultLicensePlate;
+	    address = arguments[0];
+	  }
+
 	  var options = arguments[2] || {};
 	  var lp = findByPlate(plateId);
 	  listen(plateId, address.address);
-	  lp.raft = new Boat(address.address, options);
+	  lp.raft = new Boat("".concat(plateId, "...").concat(address.address), options);
 	  return auto;
 	}
 

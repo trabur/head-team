@@ -48,6 +48,8 @@ ht.move(id3, address3)
 ht.auto.new(id3, { address: address3 })
 ht.auto.join(id3, address1)
 ht.auto.join(id3, address2)
+// --or--
+ht.move(id3, address3).auto.new({ address: address3 }).join(address1).join(address2)
 </code></pre>
 <pre><code class="language-css">// mobile: start...
 // lane: transporting...

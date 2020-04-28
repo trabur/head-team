@@ -265,21 +265,31 @@ export function key(/* plateId, id */) {
 var Boat = Raft.extend({
   socket: null,
   write: function write(packet, callback) {
-    let lp = findByPlate(this.address)
-    lp.channel.push('SFS:raft', { 
-      room: lp.streetId,
-      plateId: this.address,
+    let config = packet.address.split('...') // from: new Boat()
+    let lp = findByPlate(config[0])
+    lp.channel.push('SFS:raft', {
+      plateId: config[0],
+      room: config[1],
       packet
     })
     callback()
   }
 })
 
-function newRaft(plateId, address) {
+function newRaft(/* plateId, address */) {
+  let plateId = ''
+  let address = null
+  if (arguments.length === 2) {
+    plateId = arguments[0]
+    address = arguments[1]
+  } else {
+    plateId = defaultLicensePlate
+    address = arguments[0]
+  }
   let options = arguments[2] || {}
   let lp = findByPlate(plateId)
   listen(plateId, address.address)
-  lp.raft = new Boat(address.address, options);
+  lp.raft = new Boat(`${plateId}...${address.address}`, options);
   return auto
 }
 
