@@ -17,6 +17,7 @@
     "liferaft": "^0.1.1",
     "phoenix": "^1.5.0-rc.0",
     "phoenix-channels": "^1.0.0",
+    "rollup-plugin-amd": "^4.0.0",
     "rollup-plugin-commonjs": "^10.1.0"
   },
   "devDependencies": {

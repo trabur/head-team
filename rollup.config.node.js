@@ -1,7 +1,7 @@
 import babel from 'rollup-plugin-babel';
-import commonjs from 'rollup-plugin-commonjs';
 import json from '@rollup/plugin-json';
 import builtins from 'rollup-plugin-node-builtins';
+import amd from 'rollup-plugin-amd';
 
 const node = {
 	input: 'index.js',
@@ -23,14 +23,7 @@ const node = {
 	plugins: [
     json(),
     builtins(),
-    commonjs({
-      namedExports: {
-        // left-hand side can be an absolute path, a path
-        // relative to the current directory, or the name
-        // of a module in node_modules
-        'phoenix-channels': [ 'Socket' ]
-      }
-    }),
+    amd(),
     babel({
       // exclude: 'node_modules/**'
     })
