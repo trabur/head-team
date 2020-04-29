@@ -12,6 +12,7 @@
   "homepage": "https://metaheap.io",
   "dependencies": {
     "@rollup/plugin-json": "^4.0.3",
+    "@rollup/plugin-node-resolve": "^7.1.3",
     "babel-preset-env": "^1.7.0",
     "gulp": "^4.0.2",
     "liferaft": "^0.1.1",

@@ -2,6 +2,7 @@ import babel from 'rollup-plugin-babel';
 import json from '@rollup/plugin-json';
 import builtins from 'rollup-plugin-node-builtins';
 import amd from 'rollup-plugin-amd';
+import resolve from '@rollup/plugin-node-resolve';
 
 const node = {
 	input: 'index.js',
@@ -16,7 +17,7 @@ const node = {
       // globals: [ 'phoenix-channels', 'liferaft' ]
       globals: {
         'liferaft': 'Raft',
-        'phoenix-channels': 'Phoenix'
+        'phoenix-channels': 'Socket'
       },
 		}
 	],
@@ -26,7 +27,8 @@ const node = {
     amd(),
     babel({
       // exclude: 'node_modules/**'
-    })
+    }),
+    resolve()
   ],
 };
 
