@@ -1,6 +1,5 @@
 import babel from 'rollup-plugin-babel';
 import commonjs from 'rollup-plugin-commonjs';
-import replace from '@rollup/plugin-replace';
 import json from '@rollup/plugin-json';
 import builtins from 'rollup-plugin-node-builtins';
 
@@ -23,10 +22,6 @@ const node = {
 	],
 	plugins: [
     json(),
-    replace({
-      phoenix: 'phoenix-channels',
-      exclude: 'bundle.js'
-    }),
     builtins(),
     commonjs({
       namedExports: {

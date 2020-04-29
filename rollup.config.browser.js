@@ -2,6 +2,7 @@ import babel from 'rollup-plugin-babel';
 import resolve from '@rollup/plugin-node-resolve';
 import commonjs from 'rollup-plugin-commonjs';
 import json from '@rollup/plugin-json';
+import replace from '@rollup/plugin-replace';
 import builtins from 'rollup-plugin-node-builtins';
 
 const browser = {
@@ -13,6 +14,9 @@ const browser = {
 		}
 	],
 	plugins: [
+    replace({
+      ['phoenix-channels']: 'phoenix'
+    }),
     json(),
     builtins(),
     resolve({ browser: true }),

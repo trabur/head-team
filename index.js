@@ -6,7 +6,7 @@ console.log("WELCOME! WELCOME! WELCOME! thank you for using HT :) ~metaheap.io")
 /*
  * includes
  */
-import { Socket } from 'phoenix'
+import { Socket } from 'phoenix-channels'
 import Raft from 'liferaft'
 
 /*

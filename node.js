@@ -1,6 +1,6 @@
 (function (global, factory) {
-  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('phoenix-channels-channels'), require('liferaft')) :
-  typeof define === 'function' && define.amd ? define(['exports', 'phoenix-channels-channels', 'liferaft'], factory) :
+  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('phoenix-channels'), require('liferaft')) :
+  typeof define === 'function' && define.amd ? define(['exports', 'phoenix-channels', 'liferaft'], factory) :
   (global = global || self, factory(global.ht = {}, global.Phoenix, global.Raft));
 }(this, (function (exports, phoenixChannels, Raft) { 'use strict';
 
