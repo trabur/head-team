@@ -16,7 +16,7 @@
       <h1 style="text-align: center;">ht.auto()</h1>
       <h2>AUTO is group consensus among peers. it uses the <a href="https://raft.github.io/" target="_blank">RAFT</a> consensus algorithm under the hood. this algorithm can be used to solve many of the problems that distributed systems present. such as reaching an agreement between a cluster of machines and then assigning tasks out to each one.</h2>
       <pre><code class="language-a">BEEP --> TURN --> MOVE ... AUTO</code></pre>
-      <h2>here is code from three node.js servers:</h2>
+      <h2>here is <a href="https://github.com/trabur/RAceFasT" target="_blank">code</a> from three node.js servers:</h2>
 <pre><code class="language-js">let id1 = '1' // license plate
 let network1 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz" // road
 let address1 = ht.secret(26, network1)
