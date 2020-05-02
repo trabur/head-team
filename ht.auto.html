@@ -18,8 +18,8 @@
       <pre><code class="language-a">BEEP --> TURN --> MOVE ... AUTO</code></pre>
       <h2>here is <a href="https://github.com/trabur/RAceFasT" target="_blank">code</a> from three node.js servers:</h2>
 <pre><code class="language-js">let id1 = '1' // license plate
-let network1 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz" // road
-let address1 = ht.secret(26, network1)
+let network1 = "AEIOUaeiou" // road
+let address1 = ht.secret(10, network1)
 // --with--
 ht.move(id1, address1)
 ht.auto.new(id1, { address: address1 })
@@ -33,16 +33,16 @@ ht.auto.on(id1, 'term change', (to, from) => {
 })
 </code></pre>
 <pre><code class="language-js">let id2 = '2' // license plate
-let network2 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz" // road
-let address2 = ht.secret(26, network2)
+let network2 = "AEIOUaeiou" // road
+let address2 = ht.secret(10, network2)
 // --with--
 ht.move(id2, address2)
 ht.auto.new(id2, { address: address2 })
 ht.auto.join(id2, address1)
 </code></pre>
 <pre><code class="language-js">let id3 = '3' // license plate
-let network3 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz" // road
-let address3 = ht.secret(26, network3)
+let network3 = "AEIOUaeiou" // road
+let address3 = ht.secret(10, network3)
 // --with--
 ht.move(id3, address3)
 ht.auto.new(id3, { address: address3 })
@@ -53,8 +53,8 @@ ht.move(id3, address3).auto.new({ address: address3 }).join(address1).join(addre
 </code></pre>
 <pre><code class="language-css">// mobile: start...
 // lane: transporting...
-// listen: ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz
-// beep: ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz
+// listen: AEIOUaeiou
+// beep: AEIOUaeiou
 // beep: HONK
 </code></pre>
       <ul style="font-size: 1.8em; font-family: monospace;">
