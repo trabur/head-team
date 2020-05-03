@@ -11,6 +11,8 @@ $ http-server . -p 3000
 # http://localhost:3000/ht.beep.html
 ```
 
+GBH: grid back heap
+
 https://github.com/automerge/automerge
 
 ```js
