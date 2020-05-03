@@ -6,6 +6,105 @@
 
   Raft = Raft && Object.prototype.hasOwnProperty.call(Raft, 'default') ? Raft['default'] : Raft;
 
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  function _defineProperties(target, props) {
+    for (var i = 0; i < props.length; i++) {
+      var descriptor = props[i];
+      descriptor.enumerable = descriptor.enumerable || false;
+      descriptor.configurable = true;
+      if ("value" in descriptor) descriptor.writable = true;
+      Object.defineProperty(target, descriptor.key, descriptor);
+    }
+  }
+
+  function _createClass(Constructor, protoProps, staticProps) {
+    if (protoProps) _defineProperties(Constructor.prototype, protoProps);
+    if (staticProps) _defineProperties(Constructor, staticProps);
+    return Constructor;
+  }
+
+  function _inherits(subClass, superClass) {
+    if (typeof superClass !== "function" && superClass !== null) {
+      throw new TypeError("Super expression must either be null or a function");
+    }
+
+    subClass.prototype = Object.create(superClass && superClass.prototype, {
+      constructor: {
+        value: subClass,
+        writable: true,
+        configurable: true
+      }
+    });
+    if (superClass) _setPrototypeOf(subClass, superClass);
+  }
+
+  function _getPrototypeOf(o) {
+    _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {
+      return o.__proto__ || Object.getPrototypeOf(o);
+    };
+    return _getPrototypeOf(o);
+  }
+
+  function _setPrototypeOf(o, p) {
+    _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
+      o.__proto__ = p;
+      return o;
+    };
+
+    return _setPrototypeOf(o, p);
+  }
+
+  function _isNativeReflectConstruct() {
+    if (typeof Reflect === "undefined" || !Reflect.construct) return false;
+    if (Reflect.construct.sham) return false;
+    if (typeof Proxy === "function") return true;
+
+    try {
+      Date.prototype.toString.call(Reflect.construct(Date, [], function () {}));
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function _assertThisInitialized(self) {
+    if (self === void 0) {
+      throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
+    }
+
+    return self;
+  }
+
+  function _possibleConstructorReturn(self, call) {
+    if (call && (typeof call === "object" || typeof call === "function")) {
+      return call;
+    }
+
+    return _assertThisInitialized(self);
+  }
+
+  function _createSuper(Derived) {
+    return function () {
+      var Super = _getPrototypeOf(Derived),
+          result;
+
+      if (_isNativeReflectConstruct()) {
+        var NewTarget = _getPrototypeOf(this).constructor;
+
+        result = Reflect.construct(Super, arguments, NewTarget);
+      } else {
+        result = Super.apply(this, arguments);
+      }
+
+      return _possibleConstructorReturn(this, result);
+    };
+  }
+
   /*
    * introduction
    */
@@ -293,20 +392,47 @@
    * AUTO
    */
 
-  var Boat = Raft.extend({
-    socket: null,
-    write: function write(packet, callback) {
-      var config = packet.address.split('...'); // from: new Boat()
+  var Boat = /*#__PURE__*/function (_Raft) {
+    _inherits(Boat, _Raft);
 
-      var lp = findByPlate(config[0]);
-      lp.channel.push('SFS:raft', {
-        plateId: config[0],
-        room: config[1],
-        packet: packet
-      });
-      callback();
+    var _super = _createSuper(Boat);
+
+    function Boat() {
+      _classCallCheck(this, Boat);
+
+      return _super.apply(this, arguments);
     }
-  });
+
+    _createClass(Boat, [{
+      key: "write",
+      value: function write(packet, callback) {
+        var config = packet.address.split('...'); // from: new Boat()
+
+        var lp = findByPlate(config[0]);
+        lp.channel.push('SFS:raft', {
+          plateId: config[0],
+          room: config[1],
+          packet: packet
+        });
+        callback();
+      }
+    }]);
+
+    return Boat;
+  }(Raft); // var Boat = Raft.extend({
+  //   socket: null,
+  //   write: function write(packet, callback) {
+  //     let config = packet.address.split('...') // from: new Boat()
+  //     let lp = findByPlate(config[0])
+  //     lp.channel.push('SFS:raft', {
+  //       plateId: config[0],
+  //       room: config[1],
+  //       packet
+  //     })
+  //     callback()
+  //   }
+  // })
+
 
   function newRaft()
   /* plateId, address */
@@ -373,13 +499,33 @@
     var lp = findByPlate(plateId);
     lp.raft.on(listen, callback);
     return auto;
+  }
+
+  function commandRaft()
+  /* plateId, json */
+  {
+    var plateId = '';
+    var json = null;
+
+    if (arguments.length === 2) {
+      plateId = arguments[0];
+      json = arguments[1];
+    } else {
+      plateId = exports.defaultLicensePlate;
+      json = arguments[0];
+    }
+
+    var lp = findByPlate(plateId);
+    lp.raft.command(json);
+    return auto;
   } // consensus algorithm
 
 
   var auto = {
     "new": newRaft,
     join: joinRaft,
-    on: onRaft
+    on: onRaft,
+    command: commandRaft
   };
 
   exports.ack = ack;

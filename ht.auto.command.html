@@ -1,0 +1,57 @@
+<html>
+  <head>
+    <title>ht.command()</title>
+    <link href="themes/prism.css" rel="stylesheet" />
+    <script src="libs/prism.js"></script>
+    <script src="bundle.js"></script>
+  </head>
+  <body style="margin: 0; color: #333; font-family: sans-serif; overflow: hidden;">
+    <div style="max-width: 800px; margin: 0 auto; background: #eee; height: 100%; padding: 0 1em; position: relative; overflow: auto;">
+      <br />
+      <br />
+      <br />
+      <div style="border-bottom: 5px dashed;">
+        <h2 style="text-align: center;">METAHEAP</h2>
+      </div>
+      <h1 style="text-align: center;">ht.command()</h1>
+<pre><code class="language-js">let id = 'AAA' // license plate
+let network = "AEIOUaeiou" // road
+let address = ht.secret(10, network)
+// --with--
+ht.move(id, address)
+ht.auto.new(id, { address: address })
+ht.auto.join(id, address)
+ht.auto.on(id, 'commit', function (command) {
+  console.log(command.log)
+})
+// --and--
+let id2 = 'BBB' // license plate
+let network2 = "AEIOUaeiou" // road
+let address2 = ht.secret(10, network2)
+// --with--
+ht.move(id2, address2)
+ht.auto.new(id2, { address: address2 })
+ht.auto.join(id2, address2)
+ht.auto.on(id2, 'commit', function (command) {
+  console.log(command.log)
+})
+// --then--
+ht.auto.command(id, { log: 'Hello World!' })
+ht.auto.command(id2, { log: 'Hello World!' })
+</code></pre>
+<pre><code class="language-css">// mobile: start...
+// lane: transporting...
+// listen: AEIOUaeiou
+// beep: AEIOUaeiou
+// beep: HONK
+</code></pre>
+      <h1 style="text-align: center;"><a href="/ht.auto.html">UPWARD</a> (:</h1>
+      <div style="border-top: 5px dashed;">
+        <h2 style="text-align: center;">METAHEAP</h2>
+      </div>
+      <br />
+      <br />
+      <br />
+    </div>
+  </body>
+</html>

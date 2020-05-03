@@ -7,7 +7,7 @@ console.log("WELCOME! WELCOME! WELCOME! thank you for using HT :) ~metaheap.io")
  * includes
  */
 import { Socket } from 'phoenix-channels'
-import Raft from 'liferaft'
+import { init } from './auto.js'
 
 /*
  * script
@@ -22,7 +22,7 @@ export let licensePlates = [
   //   channel: null,
   //   streetId: null,
   //   key: null,
-  //   raft: null
+  //   boat: null
   // }
 ]
 
@@ -262,55 +262,41 @@ export function key(/* plateId, id */) {
 /*
  * AUTO
  */
-var Boat = Raft.extend({
-  socket: null,
-  write: function write(packet, callback) {
-    let config = packet.address.split('...') // from: new Boat()
-    let lp = findByPlate(config[0])
-    lp.channel.push('SFS:raft', {
-      plateId: config[0],
-      room: config[1],
-      packet
-    })
-    callback()
-  }
-})
-
-function newRaft(/* plateId, address */) {
+function newRaft(/* plateId, streetId */) {
   let plateId = ''
-  let address = null
+  let streetId = null
   if (arguments.length === 2) {
     plateId = arguments[0]
-    address = arguments[1]
+    streetId = arguments[1]
   } else {
     plateId = defaultLicensePlate
-    address = arguments[0]
+    streetId = arguments[0]
   }
   let options = arguments[2] || {}
   let lp = findByPlate(plateId)
-  listen(plateId, address.address)
-  lp.raft = new Boat(`${plateId}...${address.address}`, options);
+  listen(plateId, streetId)
+  lp.boat = init(lp, options);
   return auto
 }
 
-function joinRaft(/* plateId, address, write */) {
+function joinRaft(/* plateId, streetId, write */) {
   let plateId = ''
-  let address = null
+  let streetId = null
   let write = null
   if (arguments.length === 3) {
     plateId = arguments[0]
-    address = arguments[1]
+    streetId = arguments[1]
     write = arguments[2]
   } else {
     plateId = defaultLicensePlate
-    address = arguments[0]
+    streetId = arguments[0]
     write = arguments[1]
   }
   let i = licensePlates.findIndex((lp) => {
     return lp.id === plateId
   })
 
-  licensePlates[i].raft.join(address, write)
+  licensePlates[i].boat.join(`${plateId}...${streetId}`, write)
   return auto
 }
 
@@ -328,7 +314,22 @@ function onRaft(/* plateId, listen, callback */) {
     callback = arguments[1]
   }
   let lp = findByPlate(plateId)
-  lp.raft.on(listen, callback)
+  lp.boat.on(listen, callback)
+  return auto
+}
+
+function commandRaft(/* plateId, json */) {
+  let plateId = ''
+  let json = null
+  if (arguments.length === 2) {
+    plateId = arguments[0]
+    json = arguments[1]
+  } else {
+    plateId = defaultLicensePlate
+    json = arguments[0]
+  }
+  let lp = findByPlate(plateId)
+  lp.boat.command(json)
   return auto
 }
 
@@ -336,5 +337,6 @@ function onRaft(/* plateId, listen, callback */) {
 export let auto = {
   new: newRaft,
   join: joinRaft,
-  on: onRaft
+  on: onRaft,
+  command: commandRaft
 }
