@@ -11,7 +11,9 @@ $ http-server . -p 3000
 # http://localhost:3000/ht.beep.html
 ```
 
-GBH: grid back heap
+Features:
+- first incompatible relay system timeshare (FIRST)
+- grid back heap (GBH)
 
 https://github.com/automerge/automerge
 
