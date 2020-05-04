@@ -14,7 +14,7 @@
         <h2 style="text-align: center;">METAHEAP</h2>
       </div>
       <h1 style="text-align: center;">ht.auto()</h1>
-      <h2>AUTO is group consensus among peers. it uses the <a href="https://raft.github.io/" target="_blank">RAFT</a> consensus algorithm under the hood. this algorithm can be used to solve many of the problems that distributed systems present. such as reaching an agreement between a cluster of machines and then assigning tasks out to each one.</h2>
+      <h2>AUTO is group consensus among peers. it functions like the <a href="https://raft.github.io/" target="_blank">RAFT</a> consensus algorithm under the hood. this algorithm can be used to solve many of the problems that distributed systems present. such as reaching an agreement between a cluster of machines and then assigning tasks out to each one.</h2>
       <pre><code class="language-a">BEEP --> TURN --> MOVE ... AUTO</code></pre>
       <h2>here is <a href="https://github.com/trabur/RAceFasT" target="_blank">code</a> from three node.js servers:</h2>
 <pre><code class="language-js">let id1 = '1' // license plate
@@ -65,6 +65,9 @@ ht.move(id3, address3).auto.new({ address: address3 }).join(address1).join(addre
         <li><a href="/ht.auto.packet.html">ht.auto.packet()</a></li>
         <li><a href="/ht.auto.command.html">ht.auto.command()</a></li>
       </ul>
+      <h2>after a group of peers reach consensus the next natural thing to do is use INTERSECTION by load-balancing traffic to it or use SECRET by confusing the situation around it. this is required because with physics matter can not be created or destroyed.</h2>
+      <h2>we have no true destroy. therefore, if we want to "delete" something we must make it difficult to reach; push it away by distance or delay it by time.</h2>
+      <h2>we have no true create. therefore, if we want to "make" something we must deal with the situation at hand; switch traffic lights between red, green, and yellow.</h2>
       <h1 style="text-align: center;"><a href="/">UPWARD</a> (:</h1>
       <div style="border-top: 5px dashed;">
         <h2 style="text-align: center;">METAHEAP</h2>

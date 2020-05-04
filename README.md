@@ -15,6 +15,12 @@ Features:
 - first incompatible relay system timeshare (FIRST)
 - grid back heap (GBH)
 
+Defense:
+- sting -- remove confusion to the system
+- crash ++ add confusion to the system
+- scale %%
+- aeiou **
+
 https://github.com/automerge/automerge
 
 ```js
