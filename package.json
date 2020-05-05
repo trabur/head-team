@@ -17,6 +17,7 @@
     "gulp": "^4.0.2",
     "liferaft": "^1.0.0",
     "millisecond": "^0.1.2",
+    "modification": "^1.0.0",
     "phoenix": "^1.5.0-rc.0",
     "phoenix-channels": "^1.0.0",
     "rollup-plugin-amd": "^4.0.0",
