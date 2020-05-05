@@ -51,8 +51,11 @@ export function init (licensePlate, options) {
     }
   })
 
-
   return this
+}
+
+function on (listen, callback) {
+
 }
 
 function join (address, write) {
@@ -65,8 +68,13 @@ function leave (address) {
 
 }
 
-function on (listen, callback) {
+// saves command to log and replicates to followers
+function command(command) {
+  // TODO: save entry to log
+  const entry = { command, term: this.term }
 
+  const appendPacket = this.appendPacket(entry)
+  this.message(this.FOLLOWER, appendPacket)
 }
 
 function write(address, packet, callback) {
@@ -120,15 +128,6 @@ function message(who, what, when) {
   for (; i < nodes.length; i++) {
     this.write(nodes[i], what)
   }
-}
-
-// saves command to log and replicates to followers
-function command(command) {
-  // TODO: save entry to log
-  const entry = { command, term: this.term }
-
-  const appendPacket = this.appendPacket(entry)
-  this.message(this.FOLLOWER, appendPacket)
 }
 
 function appendPacket (entry) {
