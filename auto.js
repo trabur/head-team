@@ -1,6 +1,6 @@
-const Tick = require('tick-tock')
+const Tick = require('tick-tock') // https://www.npmjs.com/package/tick-tock
+const Events = require('events')
 const ms = require('millisecond')
-const events = require('events')
 
 function nope() {}
 export let nodes = []
@@ -9,7 +9,8 @@ export let term = ''
 export let address = ''
 export let leader = ''
 export let lp = ''
-export let change = new events.EventEmitter()
+export let tock = new Tick(this)
+export let events = new Events.EventEmitter()
 export let election = {
   min: ms('150 ms'),
   max: ms('300 ms')
@@ -24,27 +25,27 @@ export function init (licensePlate, options) {
   lp = licensePlate
 
   // Reset our vote as we're starting a new term. Votes only last one term.
-  this.change.on('term change', function change() {
+  this.events.on('term change', () => {
     that.votes.for = null
     that.votes.granted = 0
   })
 
   // Reset our times and start the heartbeat again. If we're promoted to leader
   // the heartbeat will automatically be broadcasted to users as well.
-  this.change.on('state change', function change(state) {
-    that.timers.clear('heartbeat, election')
+  this.events.on('state change', (state) => {
+    that.tock.clear('heartbeat, election')
     that.heartbeat(that.LEADER === that.state ? that.beat : that.timeout())
-    that.change.emit(that.states[state].toLowerCase())
+    that.events.emit(that.states[state].toLowerCase())
   })
 
   // Receive incoming messages and process them.
-  this.change.on('data', async (packet, write) => {
+  this.events.on('data', async (packet, write) => {
     write = write || nope;
     var reason;
 
     if ('object' !== this.type(packet)) {
       reason = 'Invalid packet received';
-      that.change.emit('error', new Error(reason));
+      that.events.emit('error', new Error(reason));
 
       return write(await that.packet('error', reason));
     }
