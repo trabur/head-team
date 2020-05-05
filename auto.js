@@ -1,7 +1,7 @@
 const Tick = require('tick-tock') // https://www.npmjs.com/package/tick-tock
 const Events = require('events')
 const ms = require('millisecond')
-const L = require('./log') // TODO: use GUN for logging system
+const GUN = require('./gun') // TODO: use GUN for logging system
 
 // Generate a somewhat unique UUID.
 // stackoverflow.com/q/105034
