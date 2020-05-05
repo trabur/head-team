@@ -1121,7 +1121,10 @@ var ht = (function (exports) {
 
 	var Events = require('events');
 
-	var ms = require('millisecond'); // Generate a somewhat unique UUID.
+	var ms = require('millisecond');
+
+	var L = require('./log'); // TODO: use GUN for logging system
+	// Generate a somewhat unique UUID.
 	// stackoverflow.com/q/105034
 
 
@@ -1270,7 +1273,44 @@ var ht = (function (exports) {
 	    return function (_x, _x2) {
 	      return _ref.apply(this, arguments);
 	    };
-	  }());
+	  }()); // We do not need to execute the rest of the functionality below as we're
+	  // currently running as "child" raft of the cluster not as the "root" raft.
+
+	  if (os.CHILD === that.state) return that.events.emit('initialize'); // Setup the log & appends. Assume that if we're given a function log that it
+	  // needs to be initialized as it requires access to our raft instance so it
+	  // can read our information like our leader, state, term etc.
+
+	  if ('function' === type(that.Log)) {
+	    that.log = new that.Log(that, options);
+	  }
+	  /**
+	   * The raft is now listening to events so we can start our heartbeat timeout.
+	   * So that if we don't hear anything from a leader we can promote our selfs to
+	   * a candidate state.
+	   *
+	   * Start listening for heartbeats when implementors are also ready
+	   * with setting up their code.
+	   */
+
+
+	  function init(err) {
+	    if (err) {
+	      return that.events.emit('error', err);
+	    }
+
+	    that.events.emit('initialize');
+	    that.heartbeat(that.timeout());
+	  }
+
+	  if ('function' === type(init)) {
+	    if (that.init.length === 2) {
+	      return that.init(options, initialize);
+	    }
+
+	    that.init(options);
+	  }
+
+	  init();
 	  return this;
 	}
 
@@ -1290,73 +1330,73 @@ var ht = (function (exports) {
 	        switch (_context3.prev = _context3.next) {
 	          case 0:
 	            _context3.t0 = packet.type;
-	            _context3.next = _context3.t0 === 'vote' ? 4 : _context3.t0 === 'voted' ? 34 : _context3.t0 === 'error' ? 51 : _context3.t0 === 'append' ? 53 : _context3.t0 === 'append ack' ? 88 : _context3.t0 === 'append fail' ? 97 : _context3.t0 === 'exec' ? 105 : 106;
+	            _context3.next = _context3.t0 === 'vote' ? 3 : _context3.t0 === 'voted' ? 33 : _context3.t0 === 'error' ? 50 : _context3.t0 === 'append' ? 52 : _context3.t0 === 'append ack' ? 87 : _context3.t0 === 'append fail' ? 96 : _context3.t0 === 'exec' ? 104 : 105;
 	            break;
 
-	          case 4:
+	          case 3:
 	            if (!(raft.votes["for"] && raft.votes["for"] !== packet.address)) {
-	              _context3.next = 11;
+	              _context3.next = 10;
 	              break;
 	            }
 
-	            raft.emit('vote', packet, false);
+	            raft.events.emit('vote', packet, false);
 	            _context3.t1 = write;
-	            _context3.next = 9;
+	            _context3.next = 8;
 	            return raft.packet('voted', {
 	              granted: false
 	            });
 
-	          case 9:
+	          case 8:
 	            _context3.t2 = _context3.sent;
 	            return _context3.abrupt("return", (0, _context3.t1)(_context3.t2));
 
-	          case 11:
+	          case 10:
 	            if (!raft.log) {
-	              _context3.next = 24;
+	              _context3.next = 23;
 	              break;
 	            }
 
-	            _context3.next = 14;
+	            _context3.next = 13;
 	            return raft.log.getLastInfo();
 
-	          case 14:
+	          case 13:
 	            _yield$raft$log$getLa = _context3.sent;
 	            _index = _yield$raft$log$getLa.index;
 	            _term2 = _yield$raft$log$getLa.term;
 
 	            if (!(_index > packet.last.index && _term2 > packet.last.term)) {
-	              _context3.next = 24;
+	              _context3.next = 23;
 	              break;
 	            }
 
-	            raft.emit('vote', packet, false);
+	            raft.events.emit('vote', packet, false);
 	            _context3.t3 = write;
-	            _context3.next = 22;
+	            _context3.next = 21;
 	            return raft.packet('voted', {
 	              granted: false
 	            });
 
-	          case 22:
+	          case 21:
 	            _context3.t4 = _context3.sent;
 	            return _context3.abrupt("return", (0, _context3.t3)(_context3.t4));
 
-	          case 24:
+	          case 23:
 	            // We've made our decision, we haven't voted for this term yet and this
 	            // candidate came in first so it gets our vote as all requirements are
 	            // met.
 	            raft.votes["for"] = packet.address;
-	            raft.emit('vote', packet, true);
-	            raft.change({
+	            raft.events.emit('vote', packet, true);
+	            change({
 	              leader: packet.address,
 	              term: packet.term
 	            });
 	            _context3.t5 = write;
-	            _context3.next = 30;
+	            _context3.next = 29;
 	            return raft.packet('voted', {
 	              granted: true
 	            });
 
-	          case 30:
+	          case 29:
 	            _context3.t6 = _context3.sent;
 	            (0, _context3.t5)(_context3.t6);
 	            // We've accepted someone as potential new leader, so we should reset
@@ -1364,23 +1404,23 @@ var ht = (function (exports) {
 	            // Which would again increment the term causing us to be next CANDIDATE
 	            // and invalidates the request we just got, so that's silly willy.
 	            raft.heartbeat(raft.timeout());
-	            return _context3.abrupt("break", 115);
+	            return _context3.abrupt("break", 114);
 
-	          case 34:
+	          case 33:
 	            if (!(os.CANDIDATE !== raft.state)) {
-	              _context3.next = 40;
+	              _context3.next = 39;
 	              break;
 	            }
 
 	            _context3.t7 = write;
-	            _context3.next = 38;
+	            _context3.next = 37;
 	            return raft.packet('error', 'No longer a candidate, ignoring vote');
 
-	          case 38:
+	          case 37:
 	            _context3.t8 = _context3.sent;
 	            return _context3.abrupt("return", (0, _context3.t7)(_context3.t8));
 
-	          case 40:
+	          case 39:
 	            // Increment our received votes when our voting request has been
 	            // granted by the raft that received the data.
 	            if (packet.data.granted) {
@@ -1390,182 +1430,187 @@ var ht = (function (exports) {
 
 
 	            if (!raft.quorum(raft.votes.granted)) {
-	              _context3.next = 49;
+	              _context3.next = 48;
 	              break;
 	            }
 
-	            raft.change({
+	            change({
 	              leader: raft.address,
 	              state: os.LEADER
 	            }); // Send a heartbeat message to all connected clients.
 
 	            _context3.t9 = raft;
 	            _context3.t10 = os.FOLLOWER;
-	            _context3.next = 47;
+	            _context3.next = 46;
 	            return raft.packet('append');
 
-	          case 47:
+	          case 46:
 	            _context3.t11 = _context3.sent;
 
 	            _context3.t9.message.call(_context3.t9, _context3.t10, _context3.t11);
 
-	          case 49:
+	          case 48:
 	            // Empty write, nothing to do.
 	            write();
-	            return _context3.abrupt("break", 115);
+	            return _context3.abrupt("break", 114);
 
-	          case 51:
-	            raft.emit('error', new Error(packet.data));
-	            return _context3.abrupt("break", 115);
+	          case 50:
+	            raft.events.emit('error', new Error(packet.data));
+	            return _context3.abrupt("break", 114);
 
-	          case 53:
-	            _context3.next = 55;
+	          case 52:
+	            _context3.next = 54;
 	            return raft.log.getLastInfo();
 
-	          case 55:
+	          case 54:
 	            _yield$raft$log$getLa2 = _context3.sent;
 	            _term = _yield$raft$log$getLa2.term;
 	            index = _yield$raft$log$getLa2.index;
 
 	            if (!(packet.last.index !== index && packet.last.index !== 0)) {
-	              _context3.next = 72;
+	              _context3.next = 71;
 	              break;
 	            }
 
-	            _context3.next = 61;
+	            _context3.next = 60;
 	            return raft.log.has(packet.last.index);
 
-	          case 61:
+	          case 60:
 	            hasIndex = _context3.sent;
 
 	            if (!hasIndex) {
-	              _context3.next = 66;
+	              _context3.next = 65;
 	              break;
 	            }
 
 	            raft.log.removeEntriesAfter(packet.last.index);
-	            _context3.next = 72;
+	            _context3.next = 71;
 	            break;
 
-	          case 66:
+	          case 65:
 	            _context3.t12 = raft;
 	            _context3.t13 = os.LEADER;
-	            _context3.next = 70;
+	            _context3.next = 69;
 	            return raft.packet('append fail', {
 	              term: packet.last.term,
 	              index: packet.last.index
 	            });
 
-	          case 70:
+	          case 69:
 	            _context3.t14 = _context3.sent;
 	            return _context3.abrupt("return", _context3.t12.message.call(_context3.t12, _context3.t13, _context3.t14));
 
-	          case 72:
+	          case 71:
 	            if (!packet.data) {
-	              _context3.next = 82;
+	              _context3.next = 81;
 	              break;
 	            }
 
 	            _entry = packet.data[0];
-	            _context3.next = 76;
+	            _context3.next = 75;
 	            return raft.log.saveCommand(_entry.command, _entry.term, _entry.index);
 
-	          case 76:
+	          case 75:
 	            _context3.t15 = raft;
 	            _context3.t16 = os.LEADER;
-	            _context3.next = 80;
+	            _context3.next = 79;
 	            return raft.packet('append ack', {
 	              term: _entry.term,
 	              index: _entry.index
 	            });
 
-	          case 80:
+	          case 79:
 	            _context3.t17 = _context3.sent;
 
 	            _context3.t15.message.call(_context3.t15, _context3.t16, _context3.t17);
 
-	          case 82:
+	          case 81:
 	            if (!(raft.log.committedIndex < packet.last.committedIndex)) {
-	              _context3.next = 87;
+	              _context3.next = 86;
 	              break;
 	            }
 
-	            _context3.next = 85;
+	            _context3.next = 84;
 	            return raft.log.getUncommittedEntriesUpToIndex(packet.last.committedIndex, packet.last.term);
 
-	          case 85:
+	          case 84:
 	            entries = _context3.sent;
 	            raft.commitEntries(entries);
 
-	          case 87:
-	            return _context3.abrupt("break", 115);
+	          case 86:
+	            return _context3.abrupt("break", 114);
 
-	          case 88:
-	            _context3.next = 90;
+	          case 87:
+	            _context3.next = 89;
 	            return raft.log.commandAck(packet.data.index, packet.address);
 
-	          case 90:
+	          case 89:
 	            entry = _context3.sent;
 
 	            if (!(raft.quorum(entry.responses.length) && !entry.committed)) {
-	              _context3.next = 96;
+	              _context3.next = 95;
 	              break;
 	            }
 
-	            _context3.next = 94;
+	            _context3.next = 93;
 	            return raft.log.getUncommittedEntriesUpToIndex(entry.index, entry.term);
 
-	          case 94:
+	          case 93:
 	            _entries = _context3.sent;
 	            raft.commitEntries(_entries);
 
-	          case 96:
-	            return _context3.abrupt("break", 115);
+	          case 95:
+	            return _context3.abrupt("break", 114);
 
-	          case 97:
-	            _context3.next = 99;
+	          case 96:
+	            _context3.next = 98;
 	            return raft.log.get(packet.data.index);
 
-	          case 99:
+	          case 98:
 	            previousEntry = _context3.sent;
-	            _context3.next = 102;
+	            _context3.next = 101;
 	            return raft.appendPacket(previousEntry);
 
-	          case 102:
+	          case 101:
 	            append = _context3.sent;
 	            write(append);
-	            return _context3.abrupt("break", 115);
+	            return _context3.abrupt("break", 114);
+
+	          case 104:
+	            return _context3.abrupt("break", 114);
 
 	          case 105:
-	            return _context3.abrupt("break", 115);
-
-	          case 106:
 	            if (!raft.listeners('rpc').length) {
-	              _context3.next = 110;
+	              _context3.next = 109;
 	              break;
 	            }
 
-	            raft.emit('rpc', packet, write);
-	            _context3.next = 115;
+	            raft.events.emit('rpc', packet, write);
+	            _context3.next = 114;
 	            break;
 
-	          case 110:
+	          case 109:
 	            _context3.t18 = write;
-	            _context3.next = 113;
+	            _context3.next = 112;
 	            return raft.packet('error', 'Unknown message type: ' + packet.type);
 
-	          case 113:
+	          case 112:
 	            _context3.t19 = _context3.sent;
 	            (0, _context3.t18)(_context3.t19);
 
-	          case 115:
+	          case 114:
 	          case "end":
 	            return _context3.stop();
 	        }
 	      }
-	    }, _callee3, this);
+	    }, _callee3);
 	  }));
 	  return _packetType.apply(this, arguments);
+	}
+
+
+	function type(of) {
+	  return Object.prototype.toString.call(of).slice(8, -1).toLowerCase();
 	}
 
 	/*
@@ -1868,9 +1913,11 @@ var ht = (function (exports) {
 	    plateId = exports.defaultLicensePlate;
 	    streetId = arguments[0];
 	  }
+
+	  var options = arguments[2] || {};
 	  var lp = findByPlate(plateId);
 	  listen(plateId, streetId);
-	  lp.boat = initialize();
+	  lp.boat = initialize(lp, options);
 	  return auto;
 	}
 

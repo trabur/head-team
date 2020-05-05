@@ -1,6 +1,7 @@
 const Tick = require('tick-tock') // https://www.npmjs.com/package/tick-tock
 const Events = require('events')
 const ms = require('millisecond')
+const L = require('./log') // TODO: use GUN for logging system
 
 // Generate a somewhat unique UUID.
 // stackoverflow.com/q/105034
@@ -53,6 +54,7 @@ export let tock = new Tick({})
 export let events = new Events.EventEmitter()
 export let latency = 0
 export let log = null // TODO: might use some other db
+export let Log = null
 export let nodes = []
 export let state = os.FOLLOWER // Our current state.
 export let leader = '' // Leader in our cluster.
@@ -101,7 +103,7 @@ export function initialize (licensePlate, options) {
         term: packet.term
       });
     } else if (packet.term < that.term) {
-      reason = 'Stale term detected, received `'+ packet.term +'` we are at '+ that.term
+      reason = 'Stale term detected, received `' + packet.term + '` we are at ' + that.term
       that.events.emit('error', new Error(reason))
 
       return write(that.packet('error', reason))
@@ -128,11 +130,43 @@ export function initialize (licensePlate, options) {
     packetType(that, packet, write)
   })
 
+  // We do not need to execute the rest of the functionality below as we're
+  // currently running as "child" raft of the cluster not as the "root" raft.
+  if (os.CHILD === that.state) return that.events.emit('initialize')
+
+  // Setup the log & appends. Assume that if we're given a function log that it
+  // needs to be initialized as it requires access to our raft instance so it
+  // can read our information like our leader, state, term etc.
+  if ('function' === type(that.Log)) {
+    that.log = new that.Log(that, options)
+  }
+
+  /**
+   * The raft is now listening to events so we can start our heartbeat timeout.
+   * So that if we don't hear anything from a leader we can promote our selfs to
+   * a candidate state.
+   *
+   * Start listening for heartbeats when implementors are also ready
+   * with setting up their code.
+   */
+  function init(err) {
+    if (err) {
+      return that.events.emit('error', err)
+    }
+
+    that.events.emit('initialize')
+    that.heartbeat(that.timeout())
+  }
+
+  if ('function' === type(init)) {
+    if (that.init.length === 2) {
+      return that.init(options, initialize)
+    }
+    that.init(options)
+  }
+
+  init()
   return this
-}
-
-function on (listen, callback) {
-
 }
 
 function join (address, write) {
@@ -242,7 +276,6 @@ function packet(type, data) {
 }
 
 async function packetType(raft, packet, write) {
-  let that = this
   switch (packet.type) {
     // A raft asked us to vote on them. We can only vote to them if they
     // represent a higher term (and last log term, last log index).
@@ -250,7 +283,7 @@ async function packetType(raft, packet, write) {
       // The term of the vote is bigger then ours so we need to update it. If
       // it's the same and we already voted, we need to deny the vote.
       if (raft.votes.for && raft.votes.for !== packet.address) {
-        raft.emit('vote', packet, false)
+        raft.events.emit('vote', packet, false)
 
         return write(await raft.packet('voted', { granted: false }))
       }
@@ -261,7 +294,7 @@ async function packetType(raft, packet, write) {
         const { index, term } = await raft.log.getLastInfo()
 
         if (index > packet.last.index && term > packet.last.term) {
-          raft.emit('vote', packet, false)
+          raft.events.emit('vote', packet, false)
 
           return write(await raft.packet('voted', { granted: false }))
         }
@@ -271,8 +304,8 @@ async function packetType(raft, packet, write) {
       // candidate came in first so it gets our vote as all requirements are
       // met.
       raft.votes.for = packet.address
-      raft.emit('vote', packet, true)
-      raft.change({ leader: packet.address, term: packet.term })
+      raft.events.emit('vote', packet, true)
+      change({ leader: packet.address, term: packet.term })
       write(await raft.packet('voted', { granted: true }))
 
       // We've accepted someone as potential new leader, so we should reset
@@ -298,7 +331,7 @@ async function packetType(raft, packet, write) {
       // Check if we've received the minimal amount of votes required for this
       // current voting round to be considered valid.
       if (raft.quorum(raft.votes.granted)) {
-        raft.change({ leader: raft.address, state: os.LEADER })
+        change({ leader: raft.address, state: os.LEADER })
 
         // Send a heartbeat message to all connected clients.
         raft.message(os.FOLLOWER, await raft.packet('append'))
@@ -309,7 +342,7 @@ async function packetType(raft, packet, write) {
       break;
 
     case 'error':
-      raft.emit('error', new Error(packet.data))
+      raft.events.emit('error', new Error(packet.data))
       break;
 
     case 'append':
@@ -373,7 +406,7 @@ async function packetType(raft, packet, write) {
     // return an error.
     default:
       if (raft.listeners('rpc').length) {
-        raft.emit('rpc', packet, write)
+        raft.events.emit('rpc', packet, write)
       } else {
         write(await raft.packet('error', 'Unknown message type: ' + packet.type))
       }
@@ -387,13 +420,13 @@ function heartbeat(duration) {
   let that = this
   duration = duration || that.beat
 
-  if (that.timers.active('heartbeat')) {
-    that.timers.adjust('heartbeat', duration)
+  if (tock.active('heartbeat')) {
+    tock.adjust('heartbeat', duration)
 
     return that
   }
 
-  that.timers.setTimeout('heartbeat', async () => {
+  tock.setTimeout('heartbeat', async () => {
     if (os.LEADER !== that.state) {
       that.emit('heartbeat timeout')
 
