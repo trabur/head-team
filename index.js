@@ -7,7 +7,7 @@ console.log("WELCOME! WELCOME! WELCOME! thank you for using HT :) ~metaheap.io")
  * includes
  */
 import { Socket } from 'phoenix-channels'
-import { init } from './auto.js'
+import { initialize } from './auto.js'
 
 /*
  * script
@@ -262,7 +262,7 @@ export function key(/* plateId, id */) {
 /*
  * AUTO
  */
-function initRaft(/* plateId, streetId */) {
+export function init(/* plateId, streetId */) {
   let plateId = ''
   let streetId = null
   if (arguments.length === 2) {
@@ -275,7 +275,7 @@ function initRaft(/* plateId, streetId */) {
   let options = arguments[2] || {}
   let lp = findByPlate(plateId)
   listen(plateId, streetId)
-  lp.boat = init(lp, options);
+  lp.boat = initialize(lp, options);
   return auto
 }
 
@@ -339,7 +339,7 @@ function commandRaft(/* plateId, json */) {
 
 // consensus algorithm
 export let auto = {
-  init: initRaft,
+  init: init,
   on: onRaft,
   join: joinRaft,
   leave: leaveRaft,

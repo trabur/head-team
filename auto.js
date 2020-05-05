@@ -20,7 +20,7 @@ export let votes = {
   granted: 0
 }
 
-export function init (licensePlate, options) {
+export function initialize (licensePlate, options) {
   let that = this
   lp = licensePlate
 
