@@ -47,7 +47,7 @@
 
   var ms = require('millisecond');
 
-  var L = require('./log'); // TODO: use GUN for logging system
+  var GUN = require('./gun'); // TODO: use GUN for logging system
   // Generate a somewhat unique UUID.
   // stackoverflow.com/q/105034
 
