@@ -262,6 +262,23 @@ export function key(/* plateId, id */) {
 /*
  * AUTO
  */
+function initRaft(/* plateId, streetId */) {
+  let plateId = ''
+  let streetId = null
+  if (arguments.length === 2) {
+    plateId = arguments[0]
+    streetId = arguments[1]
+  } else {
+    plateId = defaultLicensePlate
+    streetId = arguments[0]
+  }
+  let options = arguments[2] || {}
+  let lp = findByPlate(plateId)
+  listen(plateId, streetId)
+  lp.boat = init(lp, options);
+  return auto
+}
+
 function onRaft(/* plateId, listen, callback */) {
   let plateId = ''
   let listen = null
@@ -277,23 +294,6 @@ function onRaft(/* plateId, listen, callback */) {
   }
   let lp = findByPlate(plateId)
   lp.boat.on(listen, callback)
-  return auto
-}
-
-function newRaft(/* plateId, streetId */) {
-  let plateId = ''
-  let streetId = null
-  if (arguments.length === 2) {
-    plateId = arguments[0]
-    streetId = arguments[1]
-  } else {
-    plateId = defaultLicensePlate
-    streetId = arguments[0]
-  }
-  let options = arguments[2] || {}
-  let lp = findByPlate(plateId)
-  listen(plateId, streetId)
-  lp.boat = init(lp, options);
   return auto
 }
 
@@ -339,8 +339,8 @@ function commandRaft(/* plateId, json */) {
 
 // consensus algorithm
 export let auto = {
+  init: initRaft,
   on: onRaft,
-  new: newRaft,
   join: joinRaft,
   leave: leaveRaft,
   command: commandRaft
