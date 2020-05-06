@@ -1080,21 +1080,478 @@ var ht = (function (exports) {
 	var phoenix_1 = phoenix.Socket;
 	var phoenix_2 = phoenix.Phoenix;
 
+	/**
+	 * Timer instance.
+	 *
+	 * @constructor
+	 * @param {Object} timer New timer instance.
+	 * @param {Function} clear Clears the timer instance.
+	 * @param {Function} duration Duration of the timer.
+	 * @param {Function} fn The functions that need to be executed.
+	 * @api private
+	 */
+
+	function Timer(timer, clear, duration, fn) {
+	  this.start = +new Date();
+	  this.duration = duration;
+	  this.clear = clear;
+	  this.timer = timer;
+	  this.fns = [fn];
+	}
+	/**
+	 * Calculate the time left for a given timer.
+	 *
+	 * @returns {Number} Time in milliseconds.
+	 * @api public
+	 */
+
+
+	Timer.prototype.remaining = function remaining() {
+	  return this.duration - this.taken();
+	};
+	/**
+	 * Calculate the amount of time it has taken since we've set the timer.
+	 *
+	 * @returns {Number}
+	 * @api public
+	 */
+
+
+	Timer.prototype.taken = function taken() {
+	  return +new Date() - this.start;
+	};
+
+	var domain; // This constructor is used to store event handlers. Instantiating this is
+	// faster than explicitly calling `Object.create(null)` to get a "clean" empty
+	// object (tested with v8 v4.9).
+
+	function EventHandlers() {}
+
+	EventHandlers.prototype = Object.create(null);
+
+	function EventEmitter() {
+	  EventEmitter.init.call(this);
+	}
+	// require('events') === require('events').EventEmitter
+
+	EventEmitter.EventEmitter = EventEmitter;
+	EventEmitter.usingDomains = false;
+	EventEmitter.prototype.domain = undefined;
+	EventEmitter.prototype._events = undefined;
+	EventEmitter.prototype._maxListeners = undefined; // By default EventEmitters will print a warning if more than 10 listeners are
+	// added to it. This is a useful default which helps finding memory leaks.
+
+	EventEmitter.defaultMaxListeners = 10;
+
+	EventEmitter.init = function () {
+	  this.domain = null;
+
+	  if (EventEmitter.usingDomains) {
+	    // if there is an active domain, then attach to it.
+	    if (domain.active ) ;
+	  }
+
+	  if (!this._events || this._events === Object.getPrototypeOf(this)._events) {
+	    this._events = new EventHandlers();
+	    this._eventsCount = 0;
+	  }
+
+	  this._maxListeners = this._maxListeners || undefined;
+	}; // Obviously not all Emitters should be limited to 10. This function allows
+	// that to be increased. Set to zero for unlimited.
+
+
+	EventEmitter.prototype.setMaxListeners = function setMaxListeners(n) {
+	  if (typeof n !== 'number' || n < 0 || isNaN(n)) throw new TypeError('"n" argument must be a positive number');
+	  this._maxListeners = n;
+	  return this;
+	};
+
+	function $getMaxListeners(that) {
+	  if (that._maxListeners === undefined) return EventEmitter.defaultMaxListeners;
+	  return that._maxListeners;
+	}
+
+	EventEmitter.prototype.getMaxListeners = function getMaxListeners() {
+	  return $getMaxListeners(this);
+	}; // These standalone emit* functions are used to optimize calling of event
+	// handlers for fast cases because emit() itself often has a variable number of
+	// arguments and can be deoptimized because of that. These functions always have
+	// the same number of arguments and thus do not get deoptimized, so the code
+	// inside them can execute faster.
+
+
+	function emitNone(handler, isFn, self) {
+	  if (isFn) handler.call(self);else {
+	    var len = handler.length;
+	    var listeners = arrayClone(handler, len);
+
+	    for (var i = 0; i < len; ++i) listeners[i].call(self);
+	  }
+	}
+
+	function emitOne(handler, isFn, self, arg1) {
+	  if (isFn) handler.call(self, arg1);else {
+	    var len = handler.length;
+	    var listeners = arrayClone(handler, len);
+
+	    for (var i = 0; i < len; ++i) listeners[i].call(self, arg1);
+	  }
+	}
+
+	function emitTwo(handler, isFn, self, arg1, arg2) {
+	  if (isFn) handler.call(self, arg1, arg2);else {
+	    var len = handler.length;
+	    var listeners = arrayClone(handler, len);
+
+	    for (var i = 0; i < len; ++i) listeners[i].call(self, arg1, arg2);
+	  }
+	}
+
+	function emitThree(handler, isFn, self, arg1, arg2, arg3) {
+	  if (isFn) handler.call(self, arg1, arg2, arg3);else {
+	    var len = handler.length;
+	    var listeners = arrayClone(handler, len);
+
+	    for (var i = 0; i < len; ++i) listeners[i].call(self, arg1, arg2, arg3);
+	  }
+	}
+
+	function emitMany(handler, isFn, self, args) {
+	  if (isFn) handler.apply(self, args);else {
+	    var len = handler.length;
+	    var listeners = arrayClone(handler, len);
+
+	    for (var i = 0; i < len; ++i) listeners[i].apply(self, args);
+	  }
+	}
+
+	EventEmitter.prototype.emit = function emit(type) {
+	  var er, handler, len, args, i, events, domain;
+	  var doError = type === 'error';
+	  events = this._events;
+	  if (events) doError = doError && events.error == null;else if (!doError) return false;
+	  domain = this.domain; // If there is no 'error' event listener then throw.
+
+	  if (doError) {
+	    er = arguments[1];
+
+	    if (domain) {
+	      if (!er) er = new Error('Uncaught, unspecified "error" event');
+	      er.domainEmitter = this;
+	      er.domain = domain;
+	      er.domainThrown = false;
+	      domain.emit('error', er);
+	    } else if (er instanceof Error) {
+	      throw er; // Unhandled 'error' event
+	    } else {
+	      // At least give some kind of context to the user
+	      var err = new Error('Uncaught, unspecified "error" event. (' + er + ')');
+	      err.context = er;
+	      throw err;
+	    }
+
+	    return false;
+	  }
+
+	  handler = events[type];
+	  if (!handler) return false;
+	  var isFn = typeof handler === 'function';
+	  len = arguments.length;
+
+	  switch (len) {
+	    // fast cases
+	    case 1:
+	      emitNone(handler, isFn, this);
+	      break;
+
+	    case 2:
+	      emitOne(handler, isFn, this, arguments[1]);
+	      break;
+
+	    case 3:
+	      emitTwo(handler, isFn, this, arguments[1], arguments[2]);
+	      break;
+
+	    case 4:
+	      emitThree(handler, isFn, this, arguments[1], arguments[2], arguments[3]);
+	      break;
+	    // slower
+
+	    default:
+	      args = new Array(len - 1);
+
+	      for (i = 1; i < len; i++) args[i - 1] = arguments[i];
+
+	      emitMany(handler, isFn, this, args);
+	  }
+	  return true;
+	};
+
+	function _addListener(target, type, listener, prepend) {
+	  var m;
+	  var events;
+	  var existing;
+	  if (typeof listener !== 'function') throw new TypeError('"listener" argument must be a function');
+	  events = target._events;
+
+	  if (!events) {
+	    events = target._events = new EventHandlers();
+	    target._eventsCount = 0;
+	  } else {
+	    // To avoid recursion in the case that type === "newListener"! Before
+	    // adding it to the listeners, first emit "newListener".
+	    if (events.newListener) {
+	      target.emit('newListener', type, listener.listener ? listener.listener : listener); // Re-assign `events` because a newListener handler could have caused the
+	      // this._events to be assigned to a new object
+
+	      events = target._events;
+	    }
+
+	    existing = events[type];
+	  }
+
+	  if (!existing) {
+	    // Optimize the case of one listener. Don't need the extra array object.
+	    existing = events[type] = listener;
+	    ++target._eventsCount;
+	  } else {
+	    if (typeof existing === 'function') {
+	      // Adding the second element, need to change to array.
+	      existing = events[type] = prepend ? [listener, existing] : [existing, listener];
+	    } else {
+	      // If we've already got an array, just append.
+	      if (prepend) {
+	        existing.unshift(listener);
+	      } else {
+	        existing.push(listener);
+	      }
+	    } // Check for listener leak
+
+
+	    if (!existing.warned) {
+	      m = $getMaxListeners(target);
+
+	      if (m && m > 0 && existing.length > m) {
+	        existing.warned = true;
+	        var w = new Error('Possible EventEmitter memory leak detected. ' + existing.length + ' ' + type + ' listeners added. ' + 'Use emitter.setMaxListeners() to increase limit');
+	        w.name = 'MaxListenersExceededWarning';
+	        w.emitter = target;
+	        w.type = type;
+	        w.count = existing.length;
+	        emitWarning(w);
+	      }
+	    }
+	  }
+
+	  return target;
+	}
+
+	function emitWarning(e) {
+	  typeof console.warn === 'function' ? console.warn(e) : console.log(e);
+	}
+
+	EventEmitter.prototype.addListener = function addListener(type, listener) {
+	  return _addListener(this, type, listener, false);
+	};
+
+	EventEmitter.prototype.on = EventEmitter.prototype.addListener;
+
+	EventEmitter.prototype.prependListener = function prependListener(type, listener) {
+	  return _addListener(this, type, listener, true);
+	};
+
+	function _onceWrap(target, type, listener) {
+	  var fired = false;
+
+	  function g() {
+	    target.removeListener(type, g);
+
+	    if (!fired) {
+	      fired = true;
+	      listener.apply(target, arguments);
+	    }
+	  }
+
+	  g.listener = listener;
+	  return g;
+	}
+
+	EventEmitter.prototype.once = function once(type, listener) {
+	  if (typeof listener !== 'function') throw new TypeError('"listener" argument must be a function');
+	  this.on(type, _onceWrap(this, type, listener));
+	  return this;
+	};
+
+	EventEmitter.prototype.prependOnceListener = function prependOnceListener(type, listener) {
+	  if (typeof listener !== 'function') throw new TypeError('"listener" argument must be a function');
+	  this.prependListener(type, _onceWrap(this, type, listener));
+	  return this;
+	}; // emits a 'removeListener' event iff the listener was removed
+
+
+	EventEmitter.prototype.removeListener = function removeListener(type, listener) {
+	  var list, events, position, i, originalListener;
+	  if (typeof listener !== 'function') throw new TypeError('"listener" argument must be a function');
+	  events = this._events;
+	  if (!events) return this;
+	  list = events[type];
+	  if (!list) return this;
+
+	  if (list === listener || list.listener && list.listener === listener) {
+	    if (--this._eventsCount === 0) this._events = new EventHandlers();else {
+	      delete events[type];
+	      if (events.removeListener) this.emit('removeListener', type, list.listener || listener);
+	    }
+	  } else if (typeof list !== 'function') {
+	    position = -1;
+
+	    for (i = list.length; i-- > 0;) {
+	      if (list[i] === listener || list[i].listener && list[i].listener === listener) {
+	        originalListener = list[i].listener;
+	        position = i;
+	        break;
+	      }
+	    }
+
+	    if (position < 0) return this;
+
+	    if (list.length === 1) {
+	      list[0] = undefined;
+
+	      if (--this._eventsCount === 0) {
+	        this._events = new EventHandlers();
+	        return this;
+	      } else {
+	        delete events[type];
+	      }
+	    } else {
+	      spliceOne(list, position);
+	    }
+
+	    if (events.removeListener) this.emit('removeListener', type, originalListener || listener);
+	  }
+
+	  return this;
+	};
+
+	EventEmitter.prototype.removeAllListeners = function removeAllListeners(type) {
+	  var listeners, events;
+	  events = this._events;
+	  if (!events) return this; // not listening for removeListener, no need to emit
+
+	  if (!events.removeListener) {
+	    if (arguments.length === 0) {
+	      this._events = new EventHandlers();
+	      this._eventsCount = 0;
+	    } else if (events[type]) {
+	      if (--this._eventsCount === 0) this._events = new EventHandlers();else delete events[type];
+	    }
+
+	    return this;
+	  } // emit removeListener for all listeners on all events
+
+
+	  if (arguments.length === 0) {
+	    var keys = Object.keys(events);
+
+	    for (var i = 0, key; i < keys.length; ++i) {
+	      key = keys[i];
+	      if (key === 'removeListener') continue;
+	      this.removeAllListeners(key);
+	    }
+
+	    this.removeAllListeners('removeListener');
+	    this._events = new EventHandlers();
+	    this._eventsCount = 0;
+	    return this;
+	  }
+
+	  listeners = events[type];
+
+	  if (typeof listeners === 'function') {
+	    this.removeListener(type, listeners);
+	  } else if (listeners) {
+	    // LIFO order
+	    do {
+	      this.removeListener(type, listeners[listeners.length - 1]);
+	    } while (listeners[0]);
+	  }
+
+	  return this;
+	};
+
+	EventEmitter.prototype.listeners = function listeners(type) {
+	  var evlistener;
+	  var ret;
+	  var events = this._events;
+	  if (!events) ret = [];else {
+	    evlistener = events[type];
+	    if (!evlistener) ret = [];else if (typeof evlistener === 'function') ret = [evlistener.listener || evlistener];else ret = unwrapListeners(evlistener);
+	  }
+	  return ret;
+	};
+
+	EventEmitter.listenerCount = function (emitter, type) {
+	  if (typeof emitter.listenerCount === 'function') {
+	    return emitter.listenerCount(type);
+	  } else {
+	    return listenerCount.call(emitter, type);
+	  }
+	};
+
+	EventEmitter.prototype.listenerCount = listenerCount;
+
+	function listenerCount(type) {
+	  var events = this._events;
+
+	  if (events) {
+	    var evlistener = events[type];
+
+	    if (typeof evlistener === 'function') {
+	      return 1;
+	    } else if (evlistener) {
+	      return evlistener.length;
+	    }
+	  }
+
+	  return 0;
+	}
+
+	EventEmitter.prototype.eventNames = function eventNames() {
+	  return this._eventsCount > 0 ? Reflect.ownKeys(this._events) : [];
+	}; // About 1.5x faster than the two-arg version of Array#splice().
+
+
+	function spliceOne(list, index) {
+	  for (var i = index, k = i + 1, n = list.length; k < n; i += 1, k += 1) list[i] = list[k];
+
+	  list.pop();
+	}
+
+	function arrayClone(arr, i) {
+	  var copy = new Array(i);
+
+	  while (i--) copy[i] = arr[i];
+
+	  return copy;
+	}
+
+	function unwrapListeners(arr) {
+	  var ret = new Array(arr.length);
+
+	  for (var i = 0; i < ret.length; ++i) {
+	    ret[i] = arr[i].listener || arr[i];
+	  }
+
+	  return ret;
+	}
+
 	function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
 
 	function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
-
-	var Tick = require('tick-tock'); // https://www.npmjs.com/package/tick-tock
-
-
-	var Events = require('events');
-
-	var ms = require('millisecond');
-
-	var GUN = require('./gun'); // TODO: use GUN for logging system
 	// Generate a somewhat unique UUID.
 	// stackoverflow.com/q/105034
-
 
 	function UUID() {
 	  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function gen(c) {
@@ -1123,21 +1580,15 @@ var ht = (function (exports) {
 	for (var s = 0; s < states.length; s++) {
 	  os[states[s]] = s;
 	} // Emit when modifications are made.
-
-
-	var change = require('modification')(' change'); // A nope function for when people don't want message acknowledgements. Because
+	// TODO: when this value changes console.log it // find a more compatible library
+	// const change = require('modification')(' change')
+	// A nope function for when people don't want message acknowledgements. Because
 	// they don't care about CAP.
 
 
 	function nope() {}
-	var election = {
-	  min: ms('150 ms'),
-	  max: ms('300 ms')
-	};
-	var beat = ms('50 ms');
 	var address = UUID();
-	var tock = new Tick({});
-	var events = new Events.EventEmitter();
+	var events = new EventEmitter.EventEmitter();
 
 	function initialize(licensePlate, options) {
 	  var _this = this;
@@ -1182,21 +1633,16 @@ var ht = (function (exports) {
 
 	            case 9:
 	              if (!(packet.term > that.term)) {
-	                _context.next = 13;
+	                _context.next = 12;
 	                break;
 	              }
 
-	              change({
-	                leader: os.LEADER === packet.state ? packet.address : packet.leader || that.leader,
-	                state: os.FOLLOWER,
-	                term: packet.term
-	              });
-	              _context.next = 17;
+	              _context.next = 16;
 	              break;
 
-	            case 13:
+	            case 12:
 	              if (!(packet.term < that.term)) {
-	                _context.next = 17;
+	                _context.next = 16;
 	                break;
 	              }
 
@@ -1204,7 +1650,7 @@ var ht = (function (exports) {
 	              that.events.emit('error', new Error(reason));
 	              return _context.abrupt("return", write(that.packet('error', reason)));
 
-	            case 17:
+	            case 16:
 	              // If we receive a message from someone who claims to be leader and shares
 	              // our same term while we're in candidate mode we will recognize their
 	              // leadership and return as follower.
@@ -1212,17 +1658,11 @@ var ht = (function (exports) {
 	              // If we got this far we already know that our terms are the same as it
 	              // would be changed or prevented above.
 	              if (os.LEADER === packet.state) {
-	                if (os.FOLLOWER !== that.state) {
-	                  change({
-	                    state: os.FOLLOWER
-	                  });
-	                }
+	                if (os.FOLLOWER !== that.state) ;
 
-	                if (packet.address !== that.leader) {
-	                  change({
-	                    leader: packet.address
-	                  });
-	                } // Always when we receive a message from the Leader we need to reset our heartbeat.
+	                if (packet.address !== that.leader) ; // TODO: when this value changes console.log it
+	                // change({ leader: packet.address })
+	                // Always when we receive a message from the Leader we need to reset our heartbeat.
 
 
 	                that.heartbeat(that.timeout());
@@ -1230,7 +1670,7 @@ var ht = (function (exports) {
 
 	              packetType(that, packet, write);
 
-	            case 19:
+	            case 18:
 	            case "end":
 	              return _context.stop();
 	          }
@@ -1298,7 +1738,7 @@ var ht = (function (exports) {
 	        switch (_context3.prev = _context3.next) {
 	          case 0:
 	            _context3.t0 = packet.type;
-	            _context3.next = _context3.t0 === 'vote' ? 3 : _context3.t0 === 'voted' ? 33 : _context3.t0 === 'error' ? 50 : _context3.t0 === 'append' ? 52 : _context3.t0 === 'append ack' ? 87 : _context3.t0 === 'append fail' ? 96 : _context3.t0 === 'exec' ? 104 : 105;
+	            _context3.next = _context3.t0 === 'vote' ? 3 : _context3.t0 === 'voted' ? 32 : _context3.t0 === 'error' ? 48 : _context3.t0 === 'append' ? 50 : _context3.t0 === 'append ack' ? 85 : _context3.t0 === 'append fail' ? 94 : _context3.t0 === 'exec' ? 102 : 103;
 	            break;
 
 	          case 3:
@@ -1353,18 +1793,16 @@ var ht = (function (exports) {
 	            // candidate came in first so it gets our vote as all requirements are
 	            // met.
 	            raft.votes["for"] = packet.address;
-	            raft.events.emit('vote', packet, true);
-	            change({
-	              leader: packet.address,
-	              term: packet.term
-	            });
+	            raft.events.emit('vote', packet, true); // TODO: when this value changes console.log it
+	            // change({ leader: packet.address, term: packet.term })
+
 	            _context3.t5 = write;
-	            _context3.next = 29;
+	            _context3.next = 28;
 	            return raft.packet('voted', {
 	              granted: true
 	            });
 
-	          case 29:
+	          case 28:
 	            _context3.t6 = _context3.sent;
 	            (0, _context3.t5)(_context3.t6);
 	            // We've accepted someone as potential new leader, so we should reset
@@ -1372,23 +1810,23 @@ var ht = (function (exports) {
 	            // Which would again increment the term causing us to be next CANDIDATE
 	            // and invalidates the request we just got, so that's silly willy.
 	            raft.heartbeat(raft.timeout());
-	            return _context3.abrupt("break", 114);
+	            return _context3.abrupt("break", 112);
 
-	          case 33:
+	          case 32:
 	            if (!(os.CANDIDATE !== raft.state)) {
-	              _context3.next = 39;
+	              _context3.next = 38;
 	              break;
 	            }
 
 	            _context3.t7 = write;
-	            _context3.next = 37;
+	            _context3.next = 36;
 	            return raft.packet('error', 'No longer a candidate, ignoring vote');
 
-	          case 37:
+	          case 36:
 	            _context3.t8 = _context3.sent;
 	            return _context3.abrupt("return", (0, _context3.t7)(_context3.t8));
 
-	          case 39:
+	          case 38:
 	            // Increment our received votes when our voting request has been
 	            // granted by the raft that received the data.
 	            if (packet.data.granted) {
@@ -1398,175 +1836,170 @@ var ht = (function (exports) {
 
 
 	            if (!raft.quorum(raft.votes.granted)) {
-	              _context3.next = 48;
+	              _context3.next = 46;
 	              break;
 	            }
 
-	            change({
-	              leader: raft.address,
-	              state: os.LEADER
-	            }); // Send a heartbeat message to all connected clients.
-
 	            _context3.t9 = raft;
 	            _context3.t10 = os.FOLLOWER;
-	            _context3.next = 46;
+	            _context3.next = 44;
 	            return raft.packet('append');
 
-	          case 46:
+	          case 44:
 	            _context3.t11 = _context3.sent;
 
 	            _context3.t9.message.call(_context3.t9, _context3.t10, _context3.t11);
 
-	          case 48:
+	          case 46:
 	            // Empty write, nothing to do.
 	            write();
-	            return _context3.abrupt("break", 114);
+	            return _context3.abrupt("break", 112);
+
+	          case 48:
+	            raft.events.emit('error', new Error(packet.data));
+	            return _context3.abrupt("break", 112);
 
 	          case 50:
-	            raft.events.emit('error', new Error(packet.data));
-	            return _context3.abrupt("break", 114);
-
-	          case 52:
-	            _context3.next = 54;
+	            _context3.next = 52;
 	            return raft.log.getLastInfo();
 
-	          case 54:
+	          case 52:
 	            _yield$raft$log$getLa2 = _context3.sent;
 	            _term = _yield$raft$log$getLa2.term;
 	            index = _yield$raft$log$getLa2.index;
 
 	            if (!(packet.last.index !== index && packet.last.index !== 0)) {
-	              _context3.next = 71;
+	              _context3.next = 69;
 	              break;
 	            }
 
-	            _context3.next = 60;
+	            _context3.next = 58;
 	            return raft.log.has(packet.last.index);
 
-	          case 60:
+	          case 58:
 	            hasIndex = _context3.sent;
 
 	            if (!hasIndex) {
-	              _context3.next = 65;
+	              _context3.next = 63;
 	              break;
 	            }
 
 	            raft.log.removeEntriesAfter(packet.last.index);
-	            _context3.next = 71;
+	            _context3.next = 69;
 	            break;
 
-	          case 65:
+	          case 63:
 	            _context3.t12 = raft;
 	            _context3.t13 = os.LEADER;
-	            _context3.next = 69;
+	            _context3.next = 67;
 	            return raft.packet('append fail', {
 	              term: packet.last.term,
 	              index: packet.last.index
 	            });
 
-	          case 69:
+	          case 67:
 	            _context3.t14 = _context3.sent;
 	            return _context3.abrupt("return", _context3.t12.message.call(_context3.t12, _context3.t13, _context3.t14));
 
-	          case 71:
+	          case 69:
 	            if (!packet.data) {
-	              _context3.next = 81;
+	              _context3.next = 79;
 	              break;
 	            }
 
 	            _entry = packet.data[0];
-	            _context3.next = 75;
+	            _context3.next = 73;
 	            return raft.log.saveCommand(_entry.command, _entry.term, _entry.index);
 
-	          case 75:
+	          case 73:
 	            _context3.t15 = raft;
 	            _context3.t16 = os.LEADER;
-	            _context3.next = 79;
+	            _context3.next = 77;
 	            return raft.packet('append ack', {
 	              term: _entry.term,
 	              index: _entry.index
 	            });
 
-	          case 79:
+	          case 77:
 	            _context3.t17 = _context3.sent;
 
 	            _context3.t15.message.call(_context3.t15, _context3.t16, _context3.t17);
 
-	          case 81:
+	          case 79:
 	            if (!(raft.log.committedIndex < packet.last.committedIndex)) {
-	              _context3.next = 86;
+	              _context3.next = 84;
 	              break;
 	            }
 
-	            _context3.next = 84;
+	            _context3.next = 82;
 	            return raft.log.getUncommittedEntriesUpToIndex(packet.last.committedIndex, packet.last.term);
 
-	          case 84:
+	          case 82:
 	            entries = _context3.sent;
 	            raft.commitEntries(entries);
 
-	          case 86:
-	            return _context3.abrupt("break", 114);
+	          case 84:
+	            return _context3.abrupt("break", 112);
 
-	          case 87:
-	            _context3.next = 89;
+	          case 85:
+	            _context3.next = 87;
 	            return raft.log.commandAck(packet.data.index, packet.address);
 
-	          case 89:
+	          case 87:
 	            entry = _context3.sent;
 
 	            if (!(raft.quorum(entry.responses.length) && !entry.committed)) {
-	              _context3.next = 95;
+	              _context3.next = 93;
 	              break;
 	            }
 
-	            _context3.next = 93;
+	            _context3.next = 91;
 	            return raft.log.getUncommittedEntriesUpToIndex(entry.index, entry.term);
 
-	          case 93:
+	          case 91:
 	            _entries = _context3.sent;
 	            raft.commitEntries(_entries);
 
-	          case 95:
-	            return _context3.abrupt("break", 114);
+	          case 93:
+	            return _context3.abrupt("break", 112);
 
-	          case 96:
-	            _context3.next = 98;
+	          case 94:
+	            _context3.next = 96;
 	            return raft.log.get(packet.data.index);
 
-	          case 98:
+	          case 96:
 	            previousEntry = _context3.sent;
-	            _context3.next = 101;
+	            _context3.next = 99;
 	            return raft.appendPacket(previousEntry);
 
-	          case 101:
+	          case 99:
 	            append = _context3.sent;
 	            write(append);
-	            return _context3.abrupt("break", 114);
+	            return _context3.abrupt("break", 112);
 
-	          case 104:
-	            return _context3.abrupt("break", 114);
+	          case 102:
+	            return _context3.abrupt("break", 112);
 
-	          case 105:
+	          case 103:
 	            if (!raft.listeners('rpc').length) {
-	              _context3.next = 109;
+	              _context3.next = 107;
 	              break;
 	            }
 
 	            raft.events.emit('rpc', packet, write);
-	            _context3.next = 114;
+	            _context3.next = 112;
 	            break;
 
-	          case 109:
+	          case 107:
 	            _context3.t18 = write;
-	            _context3.next = 112;
+	            _context3.next = 110;
 	            return raft.packet('error', 'Unknown message type: ' + packet.type);
 
-	          case 112:
+	          case 110:
 	            _context3.t19 = _context3.sent;
 	            (0, _context3.t18)(_context3.t19);
 
-	          case 114:
+	          case 112:
 	          case "end":
 	            return _context3.stop();
 	        }

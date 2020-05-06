@@ -1,20 +1,8 @@
-const Tick = require('tick-tock') // https://www.npmjs.com/package/tick-tock
-const Events = require('events')
-const ms = require('millisecond')
-const GUN = require('./gun') // TODO: use GUN for logging system
+import Tick from 'tick-tock' // https://www.npmjs.com/package/tick-tock
+import Events from 'events'
+// const GUN = require('./gun') // TODO: use GUN for logging system (note: it will be passed in)
 
-// Generate a somewhat unique UUID.
-// stackoverflow.com/q/105034
-function UUID() {
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function gen(c) {
-    var random = Math.random() * 16 | 0
-      , value = c !== 'x'
-        ? (random & 0x3 | 0x8)
-        : random
-
-    return value.toString(16)
-  })
-}
+import UUID from './uuid.js'
 
 /*
  * A Raft can be in only one of the various states. The stopped state is not
@@ -34,16 +22,17 @@ for (let s = 0; s < states.length; s++) {
   os[states[s]] = s
 }
 // Emit when modifications are made.
-const change = require('modification')(' change')
+// TODO: when this value changes console.log it // find a more compatible library
+// const change = require('modification')(' change')
 // A nope function for when people don't want message acknowledgements. Because
 // they don't care about CAP.
 function nope() {}
 export let lp = ''
 export let election = {
-  min: ms('150 ms'),
-  max: ms('300 ms')
+  min: 150, // ms('150 ms'),
+  max: 300  // ms('300 ms')
 }
-export let beat = ms('50 ms')
+export let beat = 50 // ms('50 ms')
 export let votes = {
   for: null, // Who did we vote for in this current term.
   granted: 0 // How many votes we're granted to us.
@@ -97,11 +86,12 @@ export function initialize (licensePlate, options) {
     // If the raft receives a request with a stale term number it should be
     // rejected.
     if (packet.term > that.term) {
-      change({
-        leader: os.LEADER === packet.state ? packet.address : packet.leader || that.leader,
-        state: os.FOLLOWER,
-        term: packet.term
-      });
+      // TODO: when this value changes console.log it
+      // change({
+      //   leader: os.LEADER === packet.state ? packet.address : packet.leader || that.leader,
+      //   state: os.FOLLOWER,
+      //   term: packet.term
+      // })
     } else if (packet.term < that.term) {
       reason = 'Stale term detected, received `' + packet.term + '` we are at ' + that.term
       that.events.emit('error', new Error(reason))
@@ -117,10 +107,12 @@ export function initialize (licensePlate, options) {
     // would be changed or prevented above.
     if (os.LEADER === packet.state) {
       if (os.FOLLOWER !== that.state) {
-        change({ state: os.FOLLOWER })
+        // TODO: when this value changes console.log it
+        // change({ state: os.FOLLOWER })
       }
       if (packet.address !== that.leader) {
-        change({ leader: packet.address })
+        // TODO: when this value changes console.log it
+        // change({ leader: packet.address })
       }
 
       // Always when we receive a message from the Leader we need to reset our heartbeat.
@@ -305,7 +297,8 @@ async function packetType(raft, packet, write) {
       // met.
       raft.votes.for = packet.address
       raft.events.emit('vote', packet, true)
-      change({ leader: packet.address, term: packet.term })
+      // TODO: when this value changes console.log it
+      // change({ leader: packet.address, term: packet.term })
       write(await raft.packet('voted', { granted: true }))
 
       // We've accepted someone as potential new leader, so we should reset
@@ -331,7 +324,8 @@ async function packetType(raft, packet, write) {
       // Check if we've received the minimal amount of votes required for this
       // current voting round to be considered valid.
       if (raft.quorum(raft.votes.granted)) {
-        change({ leader: raft.address, state: os.LEADER })
+        // TODO: when this value changes console.log it
+        // change({ leader: raft.address, state: os.LEADER })
 
         // Send a heartbeat message to all connected clients.
         raft.message(os.FOLLOWER, await raft.packet('append'))
