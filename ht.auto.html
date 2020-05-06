@@ -22,7 +22,7 @@
         <h2 style="text-align: center;">METAHEAP</h2>
       </div>
       <h1 style="text-align: center;">ht.auto()</h1>
-      <h2>AUTO is group consensus among peers. it functions like the <a href="https://raft.github.io/" target="_blank">RAFT</a> consensus algorithm under the hood. this algorithm can be used to solve many of the problems that distributed systems present. such as reaching an agreement between a cluster of machines and then assigning tasks out to each one.</h2>
+      <h2>AUTO is group consensus among peers. it functions like the <a href="https://raft.github.io/" target="_blank">RAFT</a> consensus algorithm; for distributed systems. however it functions best in situations where a system of multi layering is possible. such as reaching an agreement between peers in a single group; then reaching futher agreement between other groups.</h2>
       <pre><code class="language-a">BEEP --> TURN --> MOVE ... AUTO</code></pre>
       <h2>checkout our full <a href="https://github.com/trabur/RAceFasT" target="_blank">code</a> example which best demonstrates how simple GCAP is. for AUTO to function it relies on storage to keep record of what is happening between each machine in the group; among peers. to LOG these records we use GUN as the underlying database where further distributed wiring can happen. final topology outcome depends on the RELAYVISOR's ability to init, run, and maintain each layer of the system.</h2>
 <pre><code class="language-js">let gun = new Gun(['https://gunjs.herokuapp.com/gun'])
