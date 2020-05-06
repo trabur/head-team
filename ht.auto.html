@@ -24,41 +24,43 @@
       <h1 style="text-align: center;">ht.auto()</h1>
       <h2>AUTO is group consensus among peers. it functions like the <a href="https://raft.github.io/" target="_blank">RAFT</a> consensus algorithm under the hood. this algorithm can be used to solve many of the problems that distributed systems present. such as reaching an agreement between a cluster of machines and then assigning tasks out to each one.</h2>
       <pre><code class="language-a">BEEP --> TURN --> MOVE ... AUTO</code></pre>
-      <h2>GUN is the underlying database that AUTO uses to LOG records:</h2>
+      <h2>checkout our full <a href="https://github.com/trabur/RAceFasT" target="_blank">code</a> example which best demonstrates how simple GCAP is. for AUTO to function it relies on storage to keep record of what is happening between each machine in the group; among peers. to LOG these records we use GUN as the underlying database where further distributed wiring can happen. final topology outcome depends on the RELAYVISOR's ability to init, run, and maintain each layer of the system.</h2>
 <pre><code class="language-js">let gun = new Gun(['https://gunjs.herokuapp.com/gun'])
 let gun1 = gun.get('metaheap.io').get('fred')
 let gun2 = gun.get('metaheap.io').get('bob')
 let gun3 = gun.get('metaheap.io').get('chad')
+// --layer--
+let physical = 'packet...mile-marker'
 </code></pre>
-      <h2>full <a href="https://github.com/trabur/RAceFasT" target="_blank">code</a> example is available on github. use the above gun(1-3) with the below blocks of code to demonstrate how AUTO connects three machines in a cluster together.</h2>
+      <h2>with the browser's console use the above 1-3 gun instances with the below blocks of code to see how AUTO connects three machines in a cluster together.</h2>
 <pre><code class="language-js">let id1 = '1' // license plate
 let network1 = "AEIOUaeiou" // road
-let address1 = ht.secret(10, network1)
+let address1 = `${id1}...${ht.secret(10, network1)}`
 // --with--
 ht.move(id1, address1)
-ht.auto.init(id1, { log: gun1, address: `${id1}...${address1}` })
+ht.auto.init(id1, { log: gun1, address: address1 })
 </code></pre>
 <pre><code class="language-js">let id2 = '2' // license plate
 let network2 = "AEIOUaeiou" // road
-let address2 = ht.secret(10, network2)
+let address2 = `${id2}...${ht.secret(10, network2)}`
 // --with--
 ht.move(id2, address2)
-ht.auto.init(id2, { log: gun2, address: `${id2}...${address2}` })
-ht.auto.join(id2, `${id1}...${address1}`)
+ht.auto.init(id2, { log: gun2, address: address2 })
+ht.auto.join(id2, address1)
 </code></pre>
 <pre><code class="language-js">let id3 = '3' // license plate
 let network3 = "AEIOUaeiou" // road
-let address3 = ht.secret(10, network3)
+let address3 = `${id3}...${ht.secret(10, network3)}`
 // --with--
 ht.move(id3, address3)
-ht.auto.init(id3, { log: gun3, address: `${id3}...${address3}` })
-ht.auto.join(id3, `${id1}...${address1}`)
-ht.auto.join(id3, `${id2}...${address2}`)
+ht.auto.init(id3, { log: gun3, address: address3 })
+ht.auto.join(id3, address1)
+ht.auto.join(id3, address2)
 // --or--
 ht.move(id3, address3)
-  .init({ log: gun3, address: `${id3}...${address3}` })
-  .join(`${id1}...${address1}`)
-  .join(`${id2}...${address2}`)
+  .init({ log: gun3, address: address3 })
+  .join(address1)
+  .join(address2)
 </code></pre>
     <h2>database commands grow stronger when needed in order to compensate for fault tolerance; this includes any scrutinizing, harassing, trolling, and the like. think of CLICK, SCROLL, POINTER (CSP) as being yet another alternative to BEEP, TURN, MOVE (BTM). there is also SPEAK, STEP, WALK (SSW); i bring up three examples here to help demonstrate how AUTO functions in a multi factor system such as our code from the 3 node.js servers above.</h2>
 <pre><code class="language-css">// mobile: start...

@@ -29,6 +29,7 @@ const browser = {
       }
     }),
     babel({
+      externalHelpers: true
       // exclude: 'node_modules/**'
     })
   ],
