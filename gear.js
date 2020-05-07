@@ -6,25 +6,29 @@ function noop() { return null }
 // for us gears are high level and teeth are low level
 // so we use teeth lingo in code and use gear lingo outside
 // gear/gears <-- tooth/teeth --> gear/gears ... cassette
-let teeth = [
-  // {
-  //   id: '123...abcdefg', // gearId...toothId
-  //   type: 'interval' || 'timeout',
-  //   function: noop(),
-  //   duration: 100, // ms
-  //   turnAt: null, // new Date(), // start
-  //   isActive: null,              // bite: true/false
-  //   stopAt: null, // new Date(), // finish
-  //   distance: 1,                 // result
-  //   rotateAmount: 0,             // used for example: if rotate(2)
-  // }
-]
+let teeth = []
+
+export function get(/* name */) {
+  if (arguments.length === 1) {
+    let name = arguments[0]
+    let gearId = name.split('...')[0]
+    let toothId = name.split('...')[1]
+    if (toothId) {
+      // give back a single tooth
+    } else {
+      // give back all teeth of the same gear
+    }
+  } else {
+    // give back all teeth
+    return teeth
+  }
+}
 
 function set(name, fn, duration, type) {
   teeth.push({
     id: name, // '123...abcdefg'
-    type: type,
-    function: fn,
+    type: type, // 'interval' || 'timeout',
+    function: fn, // noop(),
     duration: duration, // ms
     turnAt: null, // new Date(), // start
     isActive: null,              // bite: true/false
