@@ -17,6 +17,7 @@ let teeth = [
   //   isActive: null,              // bite: true/false
   //   stopAt: null, // new Date(), // finish
   //   distance: 1,                 // result
+  //   rotateAmount: 0,              // used for example: if rotate(2)
   // }
 ]
 
@@ -81,7 +82,7 @@ export async function rotate(/* amount */) {
     // rule: interval gears are executed first
     let intervalGears = filterByType(teeth, 'interval')
     // rule: check if it should run during this spin cycle
-    let durationIntervalGears = filterByDuration(intervalGears, offset, spin, turn, tick, tock) 
+    let durationIntervalGears = filterByDuration(intervalGears, offset, spin, turn, tick, tock)
     // rule: local functions take priority
     let spacedIntervalGears = sortByDistance(durationIntervalGears) 
 
@@ -100,9 +101,11 @@ export async function rotate(/* amount */) {
     // rule: timeout gears are executed second
     let timeoutGears = filterByType(teeth, 'timeout')
     // rule: check if it should run during this spin cycle
-    let durationTimeoutGears = filterByDuration(timeoutGears, offset, spin, turn, tick, tock) 
+    let durationTimeoutGears = filterByDuration(timeoutGears, offset, spin, turn, tick, tock)
+    // rule: once we run a timeout it is no longer needed
+    let unfinishedTimeoutGears = filterByUnfinished(durationTimeoutGears, amount)
     // rule: local functions take priority
-    let spacedTimeoutGears = sortByDistance(durationTimeoutGears) 
+    let spacedTimeoutGears = sortByDistance(unfinishedTimeoutGears) 
 
     // make sure we have at least one tooth
     if (spacedTimeoutGears.length) {
@@ -115,6 +118,12 @@ export async function rotate(/* amount */) {
     turn = (spin * tick) / tock // 1/10 = (1 * 10) / 100
     last = new Date().getTime() // 14
   } while (turn !== amount)
+
+  // reset rotateAmount for each tooth
+  teeth.forEach((tooth, index) => {
+    tooth.rotateAmount = 0
+    teeth[index] = tooth
+  })
 
   // finish
   return { spin: spin, turn: turn }
@@ -155,6 +164,13 @@ function filterByDuration(teeth, offset, spin, turn, tick, tock) {
   // between: now and the next time around
   return teeth.filter((tooth) => {
     return tick <= (offset + tooth.duration) <= tock // if true then tooth will run
+  })
+}
+
+// timeout gears only need to run once per rotation so we handle that here
+function filterByUnfinished(teeth, amount) {
+  return teeth.filter((tooth) => {
+    return tooth.rotateAmount <= amount // if true then tooth will run
   })
 }
 
@@ -207,6 +223,7 @@ function execute(bite) {
   bite.stopAt = new Date().getTime() // 12
   bite.isActive = false
   bite.distance = bite.stopAt - bite.turnAt // 12 - 10 = 2
+  bite.rotateAmount = bite.rotateAmount + 1
   update(bite)
   return bite
 }
