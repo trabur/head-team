@@ -73,16 +73,16 @@ export async function rotate(name, /* amount */) {
   do {
     now = new Date().getTime() // 13
     offset = now - last // 1 = 13 - 12
-    teeth = teeth.filter((tooth) => {
+    let cassette = teeth.filter((tooth) => {
       return tooth.id.split('...')[0] === name.split('...')[0]
     })
 
     // find the smallest duration so we can sleep our loop and wake back up when needed
-    let tick = smallestDuration(teeth) // 10 ms
-    let tock = biggestDuration(teeth) // 100 ms
+    let tick = smallestDuration(cassette) // 10 ms
+    let tock = biggestDuration(cassette) // 100 ms
 
     // rule: interval gears are executed first
-    let intervalGears = filterByType(teeth, 'interval')
+    let intervalGears = filterByType(cassette, 'interval')
     // rule: check if it should run during this spin cycle
     let durationIntervalGears = filterByDuration(intervalGears, offset, spin, turn, tick, tock)
     // rule: local functions take priority
@@ -101,7 +101,7 @@ export async function rotate(name, /* amount */) {
     await sleep(tick) // setTimeout()
 
     // rule: timeout gears are executed second
-    let timeoutGears = filterByType(teeth, 'timeout')
+    let timeoutGears = filterByType(cassette, 'timeout')
     // rule: check if it should run during this spin cycle
     let durationTimeoutGears = filterByDuration(timeoutGears, offset, spin, turn, tick, tock)
     // rule: once we run a timeout it is no longer needed
