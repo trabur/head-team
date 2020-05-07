@@ -74,7 +74,7 @@ export async function rotate(count) {
     let intervalGears = filterByType(teeth, 'interval')
     // rule: check if it should run during this spin cycle
     let durationIntervalGears = filterByDuration(intervalGears, now, offset, tick, tock) 
-    // rule: smaller functions take priority
+    // rule: local functions take priority
     let spacedIntervalGears = sortByDistance(durationIntervalGears) 
 
     // make sure we have at least one tooth
@@ -93,7 +93,7 @@ export async function rotate(count) {
     let timeoutGears = filterByType(teeth, 'timeout')
     // rule: check if it should run during this spin cycle
     let durationTimeoutGears = filterByDuration(timeoutGears, now, offset, tick, tock) 
-    // rule: smaller functions take priority
+    // rule: local functions take priority
     let spacedTimeoutGears = sortByDistance(durationTimeoutGears) 
 
     // make sure we have at least one tooth
