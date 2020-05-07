@@ -32,9 +32,10 @@ export function setTimeout(name, fn, timeout) {
 // remove one or more teeth
 export function clear(/* name, name, ... */) {
   let amount = arguments.length
-  for (let index = 1; index < amount; index++) {
-    let remove = arguments[index]
-
+  for (let i = 1; i < amount; i++) {
+    let remove = arguments[i]
+    let index = findIndexById(remove)
+    delete teeth[index]
   }
 }
 
