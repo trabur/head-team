@@ -9,7 +9,6 @@ function noop() { return null }
 let teeth = [
   // {
   //   id: UUID(),
-  //   gearId: UUID(), // cassette
   //   type: 'interval' || 'timeout',
   //   function: noop(),
   //   duration: 100, // ms
