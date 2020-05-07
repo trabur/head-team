@@ -54,12 +54,17 @@ export function adjust(name, duration) {
 
 // make sure every tooth in the teeth array is fired at least once as per rotation
 export async function rotate(count) {
+  // check: do we even need to rotate
+  if (count === 0 || count === null) {
+    return 0
+  }
+
   let complete = 0 // counter to keep track of the number of times the biggest tooth has rotated
   let first = new Date().getTime() // 10
   let now = new Date().getTime() // 11
   let last = new Date().getTime() // 12
   let offset = now - first // 1 = 11 - 10
-  let spinCount = 0 // counter to keep track of the number of times the smallest tooth has rotated
+  let spin = 0 // counter to keep track of the number of times the smallest tooth has rotated
 
   // spinning
   do {
@@ -67,8 +72,8 @@ export async function rotate(count) {
     offset = now - last // 1 = 13 - 12
 
     // find the smallest duration so we can sleep our loop and wake back up when needed
-    let tick = smallestDuration(teeth) // 100 ms
-    let tock = biggestDuration(teeth) // 1000 ms
+    let tick = smallestDuration(teeth) // 10 ms
+    let tock = biggestDuration(teeth) // 100 ms
 
     // rule: interval gears are executed first
     let intervalGears = filterByType(teeth, 'interval')
@@ -103,7 +108,8 @@ export async function rotate(count) {
       })
     }
 
-    spinCount = spinCount + 1 // 1 = 0 + 1
+    spin = spin + 1 // 1 = 0 + 1
+    complete = (spin * tick) / tock // 1/10 = (1 * 10) / 100
     last = new Date().getTime() // 14
   } while (complete !== count)
 
