@@ -31,8 +31,8 @@ export function setTimeout(name, fn, timeout) {
 
 // remove one or more teeth
 export function clear(/* name, name, ... */) {
-  let amount = arguments.length
-  for (let i = 1; i < amount; i++) {
+  let amount = arguments.length - 1
+  for (let i = 0; i <= amount; i++) {
     let remove = arguments[i]
     let index = findIndexById(remove)
     delete teeth[index]
@@ -54,20 +54,21 @@ export function adjust(name, duration) {
 }
 
 // make sure every tooth in the teeth array is fired at least once as per rotation
-export async function rotate(count) {
+export async function rotate(/* amount */) {
+  let amount = arguments[0] || 0
   // check: do we even need to rotate
-  if (count === 0 || count === null) {
-    return 0
+  if (amount === 0) {
+    return { spin: 0, turn: 0 }
   }
 
-  let complete = 0 // counter to keep track of the number of times the biggest tooth has rotated
+  let spin = 0 // counter to keep track of the number of times the smallest tooth has rotated
+  let turn = 0 // counter to keep track of the number of times the biggest tooth has rotated
   let first = new Date().getTime() // 10
   let now = new Date().getTime() // 11
   let last = new Date().getTime() // 12
   let offset = now - first // 1 = 11 - 10
-  let spin = 0 // counter to keep track of the number of times the smallest tooth has rotated
 
-  // spinning
+  // rotation
   do {
     now = new Date().getTime() // 13
     offset = now - last // 1 = 13 - 12
@@ -110,12 +111,12 @@ export async function rotate(count) {
     }
 
     spin = spin + 1 // 1 = 0 + 1
-    complete = (spin * tick) / tock // 1/10 = (1 * 10) / 100
+    turn = (spin * tick) / tock // 1/10 = (1 * 10) / 100
     last = new Date().getTime() // 14
-  } while (complete !== count)
+  } while (turn !== amount)
 
   // finish
-  return complete
+  return { spin: spin, turn: turn }
 }
 
 // manually execute a tooth
