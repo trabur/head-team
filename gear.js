@@ -16,18 +16,32 @@ let teeth = [
   //   isActive: null,              // bite: true/false
   //   stopAt: null, // new Date(), // finish
   //   distance: 1,                 // result
-  //   rotateAmount: 0,              // used for example: if rotate(2)
+  //   rotateAmount: 0,             // used for example: if rotate(2)
   // }
 ]
 
-// do run then delay while forever
-export function setInterval(name, fn, interval) {
+function set(name, fn, duration, type) {
+  teeth.push({
+    id: name, // '123...abcdefg'
+    type: type,
+    function: fn,
+    duration: duration, // ms
+    turnAt: null, // new Date(), // start
+    isActive: null,              // bite: true/false
+    stopAt: null, // new Date(), // finish
+    distance: 0,                 // result
+    rotateAmount: 0,             // used for example: if rotate(2)
+  })
+}
 
+// do run then delay while forever
+export function setInterval(name, fn, duration) {
+  set(name, fn, duration, 'interval')
 }
 
 // do set a delay run then finish
-export function setTimeout(name, fn, timeout) {
-
+export function setTimeout(name, fn, duration) {
+  set(name, fn, duration, 'timeout')
 }
 
 // remove one or more teeth
