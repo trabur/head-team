@@ -8,7 +8,7 @@ function noop() { return null }
 // gear/gears <-- tooth/teeth --> gear/gears ... cassette
 let teeth = [
   // {
-  //   id: UUID(),
+  //   id: '123...abcdefg', // gearId...toothId
   //   type: 'interval' || 'timeout',
   //   function: noop(),
   //   duration: 100, // ms
@@ -55,8 +55,8 @@ export function adjust(name, duration) {
 }
 
 // make sure every tooth in the teeth array is fired at least once as per rotation
-export async function rotate(/* amount */) {
-  let amount = arguments[0] || 0
+export async function rotate(name, /* amount */) {
+  let amount = arguments[1] || 1
   // check: do we even need to rotate
   if (amount === 0) {
     return { spin: 0, turn: 0 }
@@ -73,6 +73,9 @@ export async function rotate(/* amount */) {
   do {
     now = new Date().getTime() // 13
     offset = now - last // 1 = 13 - 12
+    teeth = teeth.filter((tooth) => {
+      return tooth.id.split('...')[0] === name.split('...')[0]
+    })
 
     // find the smallest duration so we can sleep our loop and wake back up when needed
     let tick = smallestDuration(teeth) // 10 ms
@@ -132,6 +135,20 @@ export async function rotate(/* amount */) {
 export function run(name) {
   let tooth = findById(name)
   return execute(tooth)
+}
+
+// this private method supports run at a lower level
+function execute(bite) {
+  bite.isActive = true
+  bite.turnAt = new Date().getTime() // 10
+  update(bite)
+  bite.function()                    // 11
+  bite.stopAt = new Date().getTime() // 12
+  bite.isActive = false
+  bite.distance = bite.stopAt - bite.turnAt // 12 - 10 = 2
+  bite.rotateAmount = bite.rotateAmount + 1
+  update(bite)
+  return bite
 }
 
 // Sort numerically because default is lexicographical sort:
@@ -211,20 +228,6 @@ function findIndexById(name) {
 // if there is nothing left to do for some time we'll just wait
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms))
-}
-
-// this private method supports run at a lower level
-function execute(bite) {
-  bite.isActive = true
-  bite.turnAt = new Date().getTime() // 10
-  update(bite)
-  bite.function()                    // 11
-  bite.stopAt = new Date().getTime() // 12
-  bite.isActive = false
-  bite.distance = bite.stopAt - bite.turnAt // 12 - 10 = 2
-  bite.rotateAmount = bite.rotateAmount + 1
-  update(bite)
-  return bite
 }
 
 // this private method keeps the teeth array up to date
