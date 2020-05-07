@@ -1,7 +1,3 @@
-// import UUID from './uuid.js'
-
-function noop() { return null }
-
 // tooth & gear are tradable like space & time are
 // for us gears are high level and teeth are low level
 // so we use teeth lingo in code and use gear lingo outside
