@@ -7,7 +7,7 @@ console.log("WELCOME! WELCOME! WELCOME! thank you for using HT :) ~metaheap.io")
  * includes
  */
 import { Socket } from 'phoenix-channels'
-import { initialize } from './auto.js'
+import { initialize } from './source/peer.js'
 
 /*
  * script
