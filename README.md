@@ -16,7 +16,9 @@ Features:
 - grid back heap (GBH)
 
 Defense:
-- sting -- remove confusion to the system
-- crash ++ add confusion to the system
-- scale %%
-- aeiou **
+```html
+-- consistency
+++ availability
+%% partition tolerance
+** distributed
+```
