@@ -3,7 +3,6 @@
     <title>ht.auto()</title>
     <link href="themes/prism.css" rel="stylesheet" />
     <script src="libs/prism.js"></script>
-    <script src="bundle.js"></script>
     <!-- GUN -->
     <script src="https://cdn.jsdelivr.net/npm/gun/gun.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/gun/lib/radix.js"></script>
@@ -12,6 +11,8 @@
     <script src="https://cdn.jsdelivr.net/npm/gun/lib/rindexed.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/gun/sea.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/gun/lib/webrtc.js"></script>
+    <!-- HT -->
+    <script src="bundle.js"></script>
   </head>
   <body style="margin: 0; color: #333; font-family: sans-serif; overflow: hidden;">
     <div style="max-width: 800px; margin: 0 auto; background: #eee; height: 100%; padding: 0 1em; position: relative; overflow: auto;">
@@ -27,8 +28,7 @@
       <h2>checkout our full <a href="https://github.com/trabur/RAceFasT" target="_blank">code</a> example which best demonstrates how simple GCAP is. for AUTO to function it relies on storage to keep record of what is happening between each machine in the group; among peers. to LOG these records we use GUN as the underlying database where further distributed wiring can happen. final topology outcome depends on the RELAYVISOR's ability to init, run, and maintain each layer of the system.</h2>
 <pre><code class="language-js">let gun = new Gun({
   fleetgrid: {
-    url: 'wss://simple.fleetgrid.com/socket',
-    room: '1337', // pick something unique for this
+    library: ht, // pass in headteam for gun to use
     token: '...' // use ht.checkpoint() to get this
   }
 })

@@ -16,6 +16,7 @@
     "babel-preset-env": "^1.7.0",
     "encoding-down": "^6.3.0",
     "gulp": "^4.0.2",
+    "gun-fleetgrid": "github:trabur/gun-fleetgrid",
     "levelup": "^4.4.0",
     "liferaft": "^1.0.0",
     "millisecond": "^0.1.2",

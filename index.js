@@ -8,6 +8,7 @@ console.log("WELCOME! WELCOME! WELCOME! thank you for using HT :) ~metaheap.io")
  */
 import { Socket } from 'phoenix-channels'
 import { initialize } from './source/peer.js'
+import 'gun-fleetgrid/index.js'
 
 /*
  * script
