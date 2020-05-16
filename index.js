@@ -13,8 +13,6 @@ import 'gun-fleetgrid/index.js'
 /*
  * script
  */
-export let findCallbacks = []
-export let postCallbacks = []
 export let messages = {}
 export let credentials = {}
 export let defaultLicensePlate = 'ABC' // used for method chaining
@@ -24,7 +22,10 @@ export let licensePlates = [
   //   socket: null,
   //   channel: null,
   //   streetId: null,
-  //   key: null,
+  //   key: null,   // pointer
+  //   value: null, // store
+  //   findCallbacks: [],
+  //   postCallbacks: [],
   //   boat: null
   // }
 ]
@@ -137,7 +138,7 @@ export function listen(plateId, streetId) {
 
   lp.channel && lp.channel.on(`room:${streetId}`, msg => {
     // keep these turned off
-    msg.log ? console.log(msg.log) : null; // TODO: PONG is leaking here
+    msg.log ? console.log(msg.log) : null;
     // msg.alert ? alert(msg.alert) : null;
 
     if (msg.payload) {
@@ -367,10 +368,22 @@ export let auto = {
 /*
  * FRONTEND LOOP
  */
-export function find(cb) {
+export function find(/* plateId, cb */) {
+  let plateId = ''
+  let cb = null
+  if (arguments.length === 2) {
+    plateId = arguments[0]
+    cb = arguments[1]
+  } else {
+    plateId = defaultLicensePlate
+    cb = arguments[0]
+  }
   let lp = findPlate(defaultLicensePlate)
 
-  findCallbacks[lp.key].push(cb)
+  lp.findCallbacks.push({
+    id: lp.key,
+    fun: cb 
+  })
 
   lp.channel.push(`SFS:public_get`, { 
     room: lp.streetId,
@@ -379,10 +392,22 @@ export function find(cb) {
   return this
 }
 
-export function post(cb) {
+export function post(/* plateId, cb */) {
+  let plateId = ''
+  let cb = null
+  if (arguments.length === 2) {
+    plateId = arguments[0]
+    cb = arguments[1]
+  } else {
+    plateId = defaultLicensePlate
+    cb = arguments[0]
+  }
   let lp = findPlate(defaultLicensePlate)
 
-  postCallbacks[lp.key].push(cb)
+  lp.postCallbacks.push({
+    id: lp.key,
+    fun: cb 
+  })
 
   lp.channel.push(`SFS:public_set`, { 
     room: lp.streetId,
