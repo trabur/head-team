@@ -13,6 +13,8 @@ import 'gun-fleetgrid/index.js'
 /*
  * script
  */
+export let findCallbacks = []
+export let postCallbacks = []
 export let messages = {}
 export let credentials = {}
 export let defaultLicensePlate = 'ABC' // used for method chaining
@@ -27,12 +29,18 @@ export let licensePlates = [
   // }
 ]
 
-// search license plates
-export function findByPlate(plateId) {
+// find license plate
+export function findPlate(plateId) {
+  let i = findPlateIndex(plateId)
+  return licensePlates[i]
+}
+
+// find license plate index
+export function findPlateIndex(plateId) {
   let i = licensePlates.findIndex((lp) => {
     return lp.id === plateId
   })
-  return licensePlates[i]
+  return i
 }
 
 // PING/PONG
@@ -43,7 +51,7 @@ export function beep(/* plateId */) {
   } else {
     plateId = defaultLicensePlate
   }
-  let lp = findByPlate(plateId)
+  let lp = findPlate(plateId)
   console.log(`beep: ${lp.streetId}`)
 
   lp.channel.push(`SFS:ping`, { room: lp.streetId })
@@ -74,7 +82,7 @@ export function lane(/* plateId, streetId */) {
     streetId = arguments[0]
   }
   console.log('lane: transporting...')
-  let lp = findByPlate(plateId)
+  let lp = findPlate(plateId)
 
   lp.socket.connect()
   let chan = lp.socket.channel(`SFM`, {})
@@ -109,7 +117,7 @@ export function turn(/* plateId, streetId */) {
     plateId = defaultLicensePlate
     streetId = arguments[0]
   }
-  let lp = findByPlate(plateId)
+  let lp = findPlate(plateId)
 
   // exit
   console.log(`turn: exit ${lp.streetId}`)
@@ -123,10 +131,8 @@ export function turn(/* plateId, streetId */) {
 // listen to events being returned
 export function listen(plateId, streetId) {
   console.log(`listen: ${streetId}`)
-  let lp = findByPlate(plateId)
-  let i = licensePlates.findIndex((lp) => {
-    return lp.id === plateId
-  })
+  let lp = findPlate(plateId)
+  let i = findPlateIndex(plateId)
   licensePlates[i].streetId = streetId // for lane and turn
 
   lp.channel && lp.channel.on(`room:${streetId}`, msg => {
@@ -145,7 +151,7 @@ export function listen(plateId, streetId) {
         break;
       case 'SFS:raft':
         console.log('auto.packet:', msg.packet)
-        let lp = findByPlate(msg.id)
+        let lp = findPlate(msg.id)
         lp.raft.emit('data', msg.packet)
         break;
       case 'SFS:user_login':
@@ -199,7 +205,7 @@ export function pass(/* plateId, username, password */) {
   }
   credentials = { username, password }
   console.log(`checkpoint.pass: register ${username}`)
-  let lp = findByPlate(plateId)
+  let lp = findPlate(plateId)
   lp.channel.push('SFS:user_register', { room: lp.streetId, username, password })
 }
 
@@ -218,7 +224,7 @@ export function ack(/* plateId, username, password */) {
     password = arguments[1]
   }
   console.log(`checkpoint.ack: login ${username}`)
-  let lp = findByPlate(plateId)
+  let lp = findPlate(plateId)
   lp.channel.push('SFS:user_login', { room: lp.streetId, username, password })
 }
 
@@ -243,7 +249,7 @@ export function secret(length, array) {
   return TCP
 }
 
-// keystone
+// pointer
 export function key(/* plateId, id */) {
   let plateId = ''
   let id = null
@@ -254,10 +260,23 @@ export function key(/* plateId, id */) {
     plateId = defaultLicensePlate
     id = arguments[0]
   }
-  let i = licensePlates.findIndex((lp) => {
-    return lp.id === plateId
-  })
+  let i = findPlateIndex(plateId)
   licensePlates[i].key = id
+}
+
+// store
+export function value(/* plateId, temp */) {
+  let plateId = ''
+  let temp = null
+  if (arguments.length === 2) {
+    plateId = arguments[0]
+    temp = arguments[1]
+  } else {
+    plateId = defaultLicensePlate
+    temp = arguments[0]
+  }
+  let i = findPlateIndex(plateId)
+  licensePlates[i].value = temp
 }
 
 /*
@@ -274,7 +293,7 @@ export function init(/* plateId, streetId */) {
     streetId = arguments[0]
   }
   let options = arguments[2] || {}
-  let lp = findByPlate(plateId)
+  let lp = findPlate(plateId)
   listen(plateId, streetId)
   lp.boat = initialize(lp, options);
   return auto
@@ -293,7 +312,7 @@ function onRaft(/* plateId, listen, callback */) {
     listen = arguments[0]
     callback = arguments[1]
   }
-  let lp = findByPlate(plateId)
+  let lp = findPlate(plateId)
   lp.boat.on(listen, callback)
   return auto
 }
@@ -311,9 +330,7 @@ function joinRaft(/* plateId, streetId, write */) {
     streetId = arguments[0]
     write = arguments[1]
   }
-  let i = licensePlates.findIndex((lp) => {
-    return lp.id === plateId
-  })
+  let i = findPlateIndex(plateId)
 
   licensePlates[i].boat.join(`${plateId}...${streetId}`, write)
   return auto
@@ -333,7 +350,7 @@ function commandRaft(/* plateId, json */) {
     plateId = defaultLicensePlate
     json = arguments[0]
   }
-  let lp = findByPlate(plateId)
+  let lp = findPlate(plateId)
   lp.boat.command(json)
   return auto
 }
@@ -350,12 +367,30 @@ export let auto = {
 /*
  * FRONTEND LOOP
  */
-export function find() {
+export function find(cb) {
+  let lp = findPlate(defaultLicensePlate)
 
+  findCallbacks[lp.key].push(cb)
+
+  lp.channel.push(`SFS:public_get`, { 
+    room: lp.streetId,
+    key: lp.key
+  })
+  return this
 }
 
-export function post() {
+export function post(cb) {
+  let lp = findPlate(defaultLicensePlate)
 
+  postCallbacks[lp.key].push(cb)
+
+  lp.channel.push(`SFS:public_set`, { 
+    room: lp.streetId,
+    key: lp.key, // word
+    value: lp.value, // definition
+    echo: true // return back
+  })
+  return this
 }
 
 export let highway = {
