@@ -346,3 +346,32 @@ export let auto = {
   leave: leaveRaft,
   command: commandRaft
 }
+
+/*
+ * FRONTEND LOOP
+ */
+export function find() {
+
+}
+
+export function post() {
+
+}
+
+export let highway = {
+  find,
+  post
+}
+
+export function get() {
+
+}
+
+export function put() {
+
+}
+
+export let driveway = {
+  get,
+  put
+}
