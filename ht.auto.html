@@ -26,10 +26,13 @@
       <h2>AUTO is group consensus among peers. it functions like the <a href="https://raft.github.io/" target="_blank">RAFT</a> consensus algorithm; for distributed systems. however it functions best in situations where a system of multi layering is possible. such as reaching an agreement between peers in a single group; then reaching futher agreement between other groups.</h2>
       <pre><code class="language-a">BEEP --> TURN --> MOVE ... AUTO</code></pre>
       <h2>checkout our full <a href="https://github.com/trabur/RAceFasT" target="_blank">code</a> example which best demonstrates how simple GCAP is. for AUTO to function it relies on storage to keep record of what is happening between each machine in the group; among peers. to LOG these records we use GUN as the underlying database where further distributed wiring can happen. final topology outcome depends on the RELAYVISOR's ability to init, run, and maintain each layer of the system.</h2>
-<pre><code class="language-js">let gun = new Gun({
+<pre><code class="language-js">/* https://gun-fleetgrid.metaheap.io */
+let gun = new Gun({
   fleetgrid: {
-    library: ht, // pass in headteam for gun to use
-    token: '...' // use ht.checkpoint() to get this
+    library: ht,         // pass in headteam
+    vehicle: 'ABC',      // license plate
+    lane: '1234567890',  // road or channel
+    // token: '...'      // toggle between highway and driveway
   }
 })
 let gun1 = gun.get('metaheap.io').get('fred')
