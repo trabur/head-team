@@ -153,7 +153,7 @@ export function listen(plateId, streetId) {
         console.log('beep: HONK')
         break;
       case 'SFS:public_get':
-        // console.log('SFS:public_get', msg)
+        console.log('SFS:public_get', msg)
         licensePlates.forEach((licensePlate) => {
           licensePlate.findCallbacks.forEach((findCallback, index) => {
             if (findCallback.id === msg.key) {
@@ -164,7 +164,7 @@ export function listen(plateId, streetId) {
         })
         break;
       case 'SFS:public_set':
-        // console.log('SFS:public_set', msg)
+        console.log('SFS:public_set', msg)
         licensePlates.forEach((licensePlate) => {
           licensePlate.postCallbacks.forEach((postCallback, index) => {
             if (postCallback.id === msg.key) {

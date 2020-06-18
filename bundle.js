@@ -1230,7 +1230,7 @@ var ht = (function (exports) {
 	        break;
 
 	      case 'SFS:public_get':
-	        // console.log('SFS:public_get', msg)
+	        console.log('SFS:public_get', msg);
 	        licensePlates.forEach(function (licensePlate) {
 	          licensePlate.findCallbacks.forEach(function (findCallback, index) {
 	            if (findCallback.id === msg.key) {
@@ -1242,7 +1242,7 @@ var ht = (function (exports) {
 	        break;
 
 	      case 'SFS:public_set':
-	        // console.log('SFS:public_set', msg)
+	        console.log('SFS:public_set', msg);
 	        licensePlates.forEach(function (licensePlate) {
 	          licensePlate.postCallbacks.forEach(function (postCallback, index) {
 	            if (postCallback.id === msg.key) {
