@@ -7,13 +7,12 @@ console.log("WELCOME! WELCOME! WELCOME! thank you for using HT :) ~metaheap.io")
  * includes
  */
 import { Socket } from 'phoenix-channels'
-import { initialize } from './source/peer.js'
-import 'gun-fleetgrid/index.js'
+// import { initialize } from './source/peer.js'
 
 /*
  * script
  */
-export let messages = {}
+let that = this
 export let credentials = {}
 export let defaultLicensePlate = 'ABC' // used for method chaining
 export let licensePlates = [
@@ -24,7 +23,12 @@ export let licensePlates = [
   //   streetId: null,
   //   key: null,   // pointer
   //   value: null, // store
-  //   findCallbacks: [],
+  //   findCallbacks: [
+  //     {
+  //       id: lp.key,
+  //       fun: cb 
+  //     }
+  //   ],
   //   postCallbacks: [],
   //   boat: null
   // }
@@ -65,7 +69,9 @@ export function mobile(plateId) {
   defaultLicensePlate = plateId
   let lp = {
     id: plateId,
-    socket: new Socket(`wss://simple.fleetgrid.com/socket`)
+    socket: new Socket(`wss://simple.fleetgrid.com/socket`),
+    postCallbacks: [],
+    findCallbacks: []
   }
   licensePlates.push(lp)
   return this
@@ -138,17 +144,35 @@ export function listen(plateId, streetId) {
 
   lp.channel && lp.channel.on(`room:${streetId}`, msg => {
     // keep these turned off
-    msg.log ? console.log(msg.log) : null;
+    msg.log ? console.log('log', msg.log) : null;
     // msg.alert ? alert(msg.alert) : null;
-
-    if (msg.payload) {
-      messages.set(msg.payload)
-    }
 
     switch (msg.topic) {
       case 'SFS:ping':
         // console.log('SFS:ping', msg)
         console.log('beep: HONK')
+        break;
+      case 'SFS:public_get':
+        // console.log('SFS:public_get', msg)
+        licensePlates.forEach((licensePlate) => {
+          licensePlate.findCallbacks.forEach((findCallback, index) => {
+            if (findCallback.id === msg.key) {
+              findCallback.fun(msg)
+              licensePlate.findCallbacks.splice(index, 1)
+            }
+          })
+        })
+        break;
+      case 'SFS:public_set':
+        // console.log('SFS:public_set', msg)
+        licensePlates.forEach((licensePlate) => {
+          licensePlate.postCallbacks.forEach((postCallback, index) => {
+            if (postCallback.id === msg.key) {
+              postCallback.fun(msg)
+              licensePlate.postCallbacks.splice(index, 1)
+            }
+          })
+        })
         break;
       case 'SFS:raft':
         console.log('auto.packet:', msg.packet)
@@ -263,6 +287,7 @@ export function key(/* plateId, id */) {
   }
   let i = findPlateIndex(plateId)
   licensePlates[i].key = id
+  return this
 }
 
 // store
@@ -278,92 +303,93 @@ export function value(/* plateId, temp */) {
   }
   let i = findPlateIndex(plateId)
   licensePlates[i].value = temp
+  return this
 }
 
 /*
  * AUTO
  */
-export function init(/* plateId, streetId */) {
-  let plateId = ''
-  let streetId = null
-  if (arguments.length === 2) {
-    plateId = arguments[0]
-    streetId = arguments[1]
-  } else {
-    plateId = defaultLicensePlate
-    streetId = arguments[0]
-  }
-  let options = arguments[2] || {}
-  let lp = findPlate(plateId)
-  listen(plateId, streetId)
-  lp.boat = initialize(lp, options);
-  return auto
-}
+// export function init(/* plateId, streetId */) {
+//   let plateId = ''
+//   let streetId = null
+//   if (arguments.length === 2) {
+//     plateId = arguments[0]
+//     streetId = arguments[1]
+//   } else {
+//     plateId = defaultLicensePlate
+//     streetId = arguments[0]
+//   }
+//   let options = arguments[2] || {}
+//   let lp = findPlate(plateId)
+//   listen(plateId, streetId)
+//   lp.boat = initialize(lp, options);
+//   return auto
+// }
 
-function onRaft(/* plateId, listen, callback */) {
-  let plateId = ''
-  let listen = null
-  let callback = null
-  if (arguments.length === 3) {
-    plateId = arguments[0]
-    listen = arguments[1]
-    callback = arguments[2]
-  } else {
-    plateId = defaultLicensePlate
-    listen = arguments[0]
-    callback = arguments[1]
-  }
-  let lp = findPlate(plateId)
-  lp.boat.on(listen, callback)
-  return auto
-}
+// function onRaft(/* plateId, listen, callback */) {
+//   let plateId = ''
+//   let listen = null
+//   let callback = null
+//   if (arguments.length === 3) {
+//     plateId = arguments[0]
+//     listen = arguments[1]
+//     callback = arguments[2]
+//   } else {
+//     plateId = defaultLicensePlate
+//     listen = arguments[0]
+//     callback = arguments[1]
+//   }
+//   let lp = findPlate(plateId)
+//   lp.boat.on(listen, callback)
+//   return auto
+// }
 
-function joinRaft(/* plateId, streetId, write */) {
-  let plateId = ''
-  let streetId = null
-  let write = null
-  if (arguments.length === 3) {
-    plateId = arguments[0]
-    streetId = arguments[1]
-    write = arguments[2]
-  } else {
-    plateId = defaultLicensePlate
-    streetId = arguments[0]
-    write = arguments[1]
-  }
-  let i = findPlateIndex(plateId)
+// function joinRaft(/* plateId, streetId, write */) {
+//   let plateId = ''
+//   let streetId = null
+//   let write = null
+//   if (arguments.length === 3) {
+//     plateId = arguments[0]
+//     streetId = arguments[1]
+//     write = arguments[2]
+//   } else {
+//     plateId = defaultLicensePlate
+//     streetId = arguments[0]
+//     write = arguments[1]
+//   }
+//   let i = findPlateIndex(plateId)
 
-  licensePlates[i].boat.join(`${plateId}...${streetId}`, write)
-  return auto
-}
+//   licensePlates[i].boat.join(`${plateId}...${streetId}`, write)
+//   return auto
+// }
 
-function leaveRaft(/* plateId, streetId, write */) {
+// function leaveRaft(/* plateId, streetId, write */) {
 
-}
+// }
 
-function commandRaft(/* plateId, json */) {
-  let plateId = ''
-  let json = null
-  if (arguments.length === 2) {
-    plateId = arguments[0]
-    json = arguments[1]
-  } else {
-    plateId = defaultLicensePlate
-    json = arguments[0]
-  }
-  let lp = findPlate(plateId)
-  lp.boat.command(json)
-  return auto
-}
+// function commandRaft(/* plateId, json */) {
+//   let plateId = ''
+//   let json = null
+//   if (arguments.length === 2) {
+//     plateId = arguments[0]
+//     json = arguments[1]
+//   } else {
+//     plateId = defaultLicensePlate
+//     json = arguments[0]
+//   }
+//   let lp = findPlate(plateId)
+//   lp.boat.command(json)
+//   return auto
+// }
 
-// consensus algorithm
-export let auto = {
-  init: init,
-  on: onRaft,
-  join: joinRaft,
-  leave: leaveRaft,
-  command: commandRaft
-}
+// // consensus algorithm
+// export let auto = {
+//   init: init,
+//   on: onRaft,
+//   join: joinRaft,
+//   leave: leaveRaft,
+//   command: commandRaft
+// }
 
 /*
  * FRONTEND LOOP
@@ -389,7 +415,7 @@ export function find(/* plateId, cb */) {
     room: lp.streetId,
     key: lp.key
   })
-  return this
+  return that
 }
 
 export function post(/* plateId, cb */) {
@@ -415,7 +441,7 @@ export function post(/* plateId, cb */) {
     value: lp.value, // definition
     echo: true // return back
   })
-  return this
+  return that
 }
 
 export let highway = {

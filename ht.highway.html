@@ -26,7 +26,7 @@ let highway = "1234567890" // road
 let id = "test"
 let store = { hello: "world" }
 function callback(value) {
-  console.log(value)
+  console.log('received:', value)
 }
 // --with--
 ht.mobile(plateId) // vehicle
@@ -36,12 +36,13 @@ ht.value(plateId, id)
 ht.highway.post(plateId, callback)
 // --or--
 ht.move(plateId, highway).key(id).value(store).post(callback)
+// --then--
+ht.move(plateId, highway).key(id).find(callback)
 </code></pre>
 <pre><code class="language-css">// mobile: start...
 // lane: transporting...
 // listen: 1234567890
-// highway.post: 
-// highway.post: 
+// received: {key: "test", topic: "SFS:public_get", value: {hello: "world"}}
 </code></pre>
       <h1 style="text-align: center;"><a href="/">UPWARD</a> :)</h1>
       <div style="border-top: 5px dashed;">
