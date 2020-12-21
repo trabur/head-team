@@ -50,19 +50,5 @@
     var elem = document.querySelector('#main');
     instance = M.Sidenav.init(elem, options);
     // console.log('instance', instance)
-
-    let gun = new Gun(['https://gunjs.herokuapp.com/gun']);
-    var user = gun.user().recall({sessionStorage: true});
-    
-		user.recall({ sessionStorage: true }, (user) => {
-			console.log('welcome ::: ', user.put.pub)
-			username = user.put.alias
-      pub = user.put.pub
-    })
-
-    // user.on((value) => {
-    //   console.log('alias', value)
-    //   username = alias
-    // })
   })
 </script>
