@@ -7,13 +7,12 @@
     </ul>
     <a href="/" class="brand-logo">METAHEAP</a>
     <ul class="right hide-on-med-and-down">
+      <li><a href="https://printedbasics.com"><i class="material-icons">circle</i></a></li>
+      <li><a href="https://tyu67.com"><i class="material-icons">network_cell</i></a></li>
+      <li><a href="https://dimension.click"><i class="material-icons">grid_on</i></a></li>
       {#if pub === ''}
-        <li><a href="/login"><i class="material-icons">circle</i></a></li>
-        <li><a href="/register"><i class="material-icons">network_cell</i></a></li>
       {:else}
-        <li><a href={`/profile/${pub}`}><i class="material-icons">person</i></a></li>
       {/if}
-      <li><a href="/pricing"><i class="material-icons">grid_on</i></a></li>
     </ul>
   </div>
 </nav>

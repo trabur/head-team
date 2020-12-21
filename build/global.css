@@ -1,0 +1,55 @@
+body {
+	margin: 0;
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	top: 0;
+}
+
+.wrapper {
+	background: #eee;
+	position: absolute;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	overflow: auto;
+}
+
+h1, h2, h3, h4, h5, h6 {
+	/* margin: 0 0 0.5em 0;
+	font-weight: 400;
+	line-height: 1.2; */
+}
+
+h1 {
+	font-size: 2em;
+}
+
+a {
+	/* color: inherit; */
+}
+
+code {
+	font-family: menlo, inconsolata, monospace;
+	font-size: calc(1em - 2px);
+	color: #555;
+	background-color: #f0f0f0;
+	padding: 0.2em 0.4em;
+	border-radius: 2px;
+}
+
+@media (min-width: 400px) {
+	body {
+		font-size: 16px;
+	}
+}
+
+.mdc-top-app-bar.demo-top-app-bar {
+	position: absolute;
+}
+
+.drawer-container {
+	z-index: 0;
+}
