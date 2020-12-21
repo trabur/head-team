@@ -18,6 +18,8 @@
 	<br />
 	<br />
 	<br />
+	<Platform />
+	<WhatCanYou />
 </div>
 
 <script>
@@ -25,5 +27,7 @@
 	import RunnerWelcome from '../components/RunnerWelcome';
 	import Welcome from '$components/Welcome';
 	import Navigation from '$components/Navigation';
+	import Platform from '$components/Platform';
+	import WhatCanYou from '$components/WhatCanYou';
 
 </script>
