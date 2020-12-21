@@ -2,21 +2,23 @@
 	<title>METAHEAP ::: TYU67</title>
 </svelte:head>
 
-<Navigation />
-<br />
-<br />
-<br />
-<div class="row">
-  <div class="col s12 m2"></div>
-  <div class="col s12 m8">
-    <Welcome />
-    <RunnerWelcome />
-  </div>
-  <div class="col s12 m2"></div>
+<div class="wrapper">
+	<Navigation />
+	<br />
+	<br />
+	<br />
+	<div class="row">
+		<div class="col s12 m2"></div>
+		<div class="col s12 m8">
+			<Welcome />
+			<RunnerWelcome />
+		</div>
+		<div class="col s12 m2"></div>
+	</div>
+	<br />
+	<br />
+	<br />
 </div>
-<br />
-<br />
-<br />
 
 <script>
 	// import { onMount, onDestroy } from 'svelte';
