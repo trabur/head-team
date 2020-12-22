@@ -1,6 +1,8 @@
 <div style='border-top: 3px solid #111;'>
   <a href={`https://github.com/trabur/tyu-command-line`} target="_blank" style="float: right; margin: 1em 0; height: 3.6em;" class="waves-effect waves-light black-text btn-large">CLI</a>
   <a href={`https://github.com/trabur/object-relational-mapping`} target="_blank" style="float: right; margin: 1em 0.2em; height: 3.6em;" class="waves-effect waves-light black-text btn-large">Library</a>
-  <h2 style="color: #111; font-size: 1.5em; font-weight: 500; margin: 0.8em 0 0.75em;">Simple Real-Time communications layer.</h2>
+  <h2 style="color: #111; font-size: 1.5em; font-weight: 500; margin: 0.8em 0 0.75em;">Soft Real-Time Communications.</h2>
   <p style="color: #111; margin: -1em 0;">community: <a href="https://printedbasics.com/pixelbox-community">pixelbox</a> • contact: <a href="//istrav.com">istrav.com</a></p>
 </div>
+<br />
+<p>METAHEAP is scalable, fault-tolernt, and distributed at it's core and is an event-driven framework at it's foundation. what makes our API (TypeScript Library & CLI) different is that rather than REST we use websockets; soft real-time communication. our backend is running the Phoenix framework coded in Elixir ... which we then unlock features (such as "channels") to our end users as a service. all of our other services (counter, ping, cron, etc...) are built ontop of the same features.</p>

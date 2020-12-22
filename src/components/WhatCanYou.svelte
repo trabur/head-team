@@ -7,7 +7,7 @@
         <div class="card-content">
           <span class="card-title">
             <br />
-            <h1 style="text-align: center; margin: 0; line-height: 1em; font-weight: bold;">What can you build<br /> with this?</h1>
+            <h1 style="text-align: center; margin: 0; line-height: 1em; font-weight: bold;">What can you build with<br /> this platform?</h1>
           </span>
           <br />
           <div class="row">

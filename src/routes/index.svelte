@@ -4,6 +4,9 @@
 
 <div class="wrapper">
 	<Navigation />
+	<Application />
+	<WhatCanYou />
+	<Platform />
 	<br />
 	<br />
 	<br />
@@ -18,8 +21,7 @@
 	<br />
 	<br />
 	<br />
-	<Platform />
-	<WhatCanYou />
+	<Contact />
 </div>
 
 <script>
@@ -29,5 +31,7 @@
 	import Navigation from '$components/Navigation';
 	import Platform from '$components/Platform';
 	import WhatCanYou from '$components/WhatCanYou';
+	import Application from '$components/Application';
+	import Contact from '$components/Contact';
 
 </script>

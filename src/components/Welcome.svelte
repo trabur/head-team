@@ -11,10 +11,10 @@
         <div style="font-size: 3em; margin: 0.2em;">=</div>
         <img src="fire.png" alt="fire" style="width: 20%" />
       </div>
-      <h1 style="margin: 0.2em; text-align: center; line-height: 1em; font-size: 2em; font-weight: bold;">channels ::: use<br />publish & subscribe</h1>
+      <h1 style="margin: 0.2em; text-align: center; line-height: 1em; font-size: 2em; font-weight: bold;">publish & subscribe</h1>
     </span>
     <br />
     <br />
-    <br />        
+    <br />
   </div>
 </div>

@@ -6,7 +6,7 @@
       <br />
       <br />
       <span class="card-title">
-        <h1 style="text-align: center; margin: 1em 0 0.5em 0; line-height: 1em; font-size: 2em; font-weight: bold;">platform ::: for<br />layer by layer</h1>
+        <h1 style="text-align: center; margin: 1em 0 0.5em 0; line-height: 1em; font-size: 2em; font-weight: bold;">platform ::: layers</h1>
         <div style="text-align: center; max-width: 750px; margin: 0 auto;">
           <a href={`https://metaheap.io`} style="margin: 0.2em; height: 3.6em;" class="waves-effect waves-light black-text btn-large">Publish & Subscribe</a>
           <a href={`https://dimension.click`} style="margin: 0.2em; height: 3.6em;" class="waves-effect waves-light black-text btn-large">Counter</a>
