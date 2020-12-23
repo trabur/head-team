@@ -39,6 +39,9 @@
               <h6 style="text-align: center; margin: 0;">Send messages to and from users or between groups of users.</h6>
             </div>
           </div>
+          <div style="text-align: center;">
+            <a href={`https://travis-burandt.gitbook.io/docs/`} target="_blank" style="height: 3.6em;" class="waves-effect waves-light black-text btn-large grey lighten-2">documentation</a>
+          </div>
           <br />
         </div>
       </div>
