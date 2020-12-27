@@ -1,0 +1,3 @@
+[submodule "object-relational-mapping"]
+	path = object-relational-mapping
+	url = git@github.com:trabur/object-relational-mapping.git

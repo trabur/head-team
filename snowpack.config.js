@@ -6,6 +6,5 @@ module.exports = {
 	},
 	alias: {
 		'$components': './src/components',
-		'@smui': './node_modules/@smui'
 	}
 };

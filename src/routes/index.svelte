@@ -34,4 +34,9 @@
 	import Application from '$components/Application';
 	import Contact from '$components/Contact';
 
+	import * as tyu from 'orm'
+
+	tyu.users.all(function ({ message }) {
+		console.log('users.all :::', message)
+	})
 </script>

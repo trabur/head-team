@@ -18,9 +18,10 @@
 		"forceConsistentCasingInFileNames": true,
 		"baseUrl": ".",
 		"paths": {
-			"$components/*": ["./src/components/*"]
+			"$components/*": ["./src/components/*"],
+			"$orm/*": ["./object-relational-mapping/*"],
 		}
 	},
-	"include": ["src/**/*"],
+	"include": ["src/**/*", "object-relational-mapping/**/*"],
 	"exclude": ["node_modules/*", ".svelte"]
 }
