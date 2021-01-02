@@ -38,7 +38,6 @@
 	import Phoenix from 'phoenix'
 
 	onMount(() => {
-		// var Socket = require("phoenix").Socket
 		var socket = new Phoenix.Socket("wss://printedbasics.gigalixirapp.com/socket")
 		let tyu = window.tyu = new TYU(socket)
 	

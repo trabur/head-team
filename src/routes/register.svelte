@@ -17,6 +17,10 @@
         <div class="card" style="padding: 1em;">
           <div class="row">
             <div class="input-field col s12">
+              <input id="email" type="text" bind:value={email}>
+              <label for="email">Email</label>
+            </div>
+            <div class="input-field col s12">
               <input id="username" type="text" bind:value={username}>
               <label for="username">Username</label>
             </div>
@@ -45,12 +49,17 @@
 	import Navigation from '$components/Navigation';
 	import { onMount, onDestroy } from 'svelte';
 
+	import { TYU } from 'object-relational-mapping'
+  import Phoenix from 'phoenix'
+
+	let email = '';
 	let username = '';
 	let secretPassword = '';
 	let confirmPassword = '';
 	let lostYourKey = false;
 
 	function auth() {
+    if (email === '') return alert('Email must be defined.')
     if (username === '') return alert('Username must be defined.')
     if (secretPassword === '') return alert('Secret Password must be defined.')
     if (confirmPassword === '') return alert('Confirm Password must be defined.')
@@ -59,19 +68,14 @@
       return;
     }
 
-    let gun = new Gun(['https://gunjs.herokuapp.com/gun']);
-    var user = gun.user().recall({sessionStorage: true});
+		var socket = new Phoenix.Socket("wss://printedbasics.gigalixirapp.com/socket")
+    let tyu = window.tyu = new TYU(socket)
     
-    user.create(username, confirmPassword, (ack) => {
-      console.log('ack', ack)
-      if (ack.err) return alert(ack.err)
+    tyu.users.register(email, username, confirmPassword, function ({ message }) {
+      if (message.error) return alert(message.reason)
+      console.log('users.register :::', message)
 
-      user.auth(username, secretPassword, (ack) => {
-        console.log('ack', ack)
-        if (ack.err) return alert(ack.err)
-
-        window.location.href = `/profile/${username}#id=${ack.sea.pub}`
-      })
+      window.location.href = `/profile/${message.account.id}`
     })
   }
 </script>
