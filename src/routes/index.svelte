@@ -25,7 +25,7 @@
 </div>
 
 <script>
-	// import { onMount, onDestroy } from 'svelte';
+	import { onMount, onDestroy } from 'svelte';
 	import RunnerWelcome from '../components/RunnerWelcome';
 	import Welcome from '$components/Welcome';
 	import Navigation from '$components/Navigation';
@@ -34,9 +34,16 @@
 	import Application from '$components/Application';
 	import Contact from '$components/Contact';
 
-	import * as tyu from 'object-relational-mapping'
+	import { TYU } from 'object-relational-mapping'
+	import Phoenix from 'phoenix'
 
-	tyu.users.all(function ({ message }) {
-		console.log('users.all :::', message)
+	onMount(() => {
+		// var Socket = require("phoenix").Socket
+		var socket = new Phoenix.Socket("wss://printedbasics.gigalixirapp.com/socket")
+		let tyu = window.tyu = new TYU(socket)
+	
+		tyu.users.all(function ({ message }) {
+			console.log('users.all :::', message)
+		})
 	})
 </script>
