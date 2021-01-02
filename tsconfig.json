@@ -22,6 +22,6 @@
 			"$orm/*": ["./object-relational-mapping/*"],
 		}
 	},
-	"include": ["src/**/*", "object-relational-mapping/**/*"],
+	"include": ["src/**/*"],
 	"exclude": ["node_modules/*", ".svelte"]
 }

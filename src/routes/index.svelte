@@ -34,7 +34,7 @@
 	import Application from '$components/Application';
 	import Contact from '$components/Contact';
 
-	import * as tyu from 'orm'
+	import * as tyu from 'object-relational-mapping'
 
 	tyu.users.all(function ({ message }) {
 		console.log('users.all :::', message)
