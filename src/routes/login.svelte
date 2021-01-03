@@ -46,7 +46,6 @@
   
 	let email = '';
 	let password = '';
-	let lostYourKey = false;
 
 	function auth() {
     if (email === '') return alert('Email must be defined.')
