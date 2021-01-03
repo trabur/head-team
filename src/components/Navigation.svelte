@@ -7,11 +7,13 @@
     </ul>
     <a href="/" class="brand-logo">METAHEAP</a>
     <ul class="right hide-on-med-and-down">
-      <li><a href="/login"><i class="material-icons">circle</i></a></li>
-      <li><a href="/register"><i class="material-icons">network_cell</i></a></li>
-      <li><a href="/pricing"><i class="material-icons">grid_on</i></a></li>
-      {#if pub === ''}
+      {#if token}
+        <li><a href="/dashboard"><i class="material-icons">dashboard</i></a></li>
+        <li><a href="/logout"><i class="material-icons">logout</i></a></li>
       {:else}
+        <li><a href="/login"><i class="material-icons">circle</i></a></li>
+        <li><a href="/register"><i class="material-icons">network_cell</i></a></li>
+        <li><a href="/pricing"><i class="material-icons">grid_on</i></a></li>
       {/if}
     </ul>
   </div>
@@ -37,6 +39,7 @@
 <script>
   import {onMount, onDestroy} from 'svelte';
 
+  export let token;
   let username = '';
   let pub = '';
 

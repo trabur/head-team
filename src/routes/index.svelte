@@ -3,8 +3,8 @@
 </svelte:head>
 
 <div class="wrapper">
-	<Navigation />
-	<Application />
+	<Navigation token={token} />
+	<Application token={token} />
 	<WhatCanYou />
 	<Platform />
 	<br />
@@ -21,7 +21,7 @@
 	<br />
 	<br />
 	<br />
-	<Contact />
+	<Contact token={token} />
 </div>
 
 <script>
@@ -37,6 +37,8 @@
 	import { TYU } from 'object-relational-mapping'
 	import Phoenix from 'phoenix'
 
+	let token = null
+
 	onMount(() => {
 		var socket = new Phoenix.Socket("wss://printedbasics.gigalixirapp.com/socket")
 		let tyu = window.tyu = new TYU(socket)
@@ -44,5 +46,7 @@
 		tyu.users.all(function ({ message }) {
 			console.log('users.all :::', message)
 		})
+
+		token = localStorage.getItem('token')
 	})
 </script>
