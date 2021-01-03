@@ -60,7 +60,7 @@
       if (message.error) return alert(message.reason)
 
       localStorage.setItem('token', message.token)
-      window.location.href = `/profile/${message.account.id}`
+      window.location.href = `/dashboard`
     })
   }
 </script>

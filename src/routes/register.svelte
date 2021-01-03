@@ -76,7 +76,7 @@
       console.log('users.register :::', message)
 
       localStorage.setItem('token', message.token)
-      window.location.href = `/profile/${message.account.id}`
+      window.location.href = `/dashboard`
     })
   }
 </script>
