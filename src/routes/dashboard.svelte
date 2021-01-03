@@ -4,7 +4,20 @@
 
 <div class="wrapper">
 	<Navigation token={token} />
-  hello dashboard
+  <br />
+  <br />
+  <br />
+  <div class="row">
+    <div class="col s12 m1"></div>
+    <div class="col s12 m10">
+      <h1 style="font-size: 3em; font-weight: 700; margin: 0;">Welcome to METAHEAP</h1>
+      <p style="font-size: 1.6em; font-weight: 700; margin: 0;">Choose a product below to get started.</p>
+    </div>
+    <div class="col s12 m1"></div>
+  </div>
+  <br />
+  <br />
+  <br />
 </div>
 
 <script>
