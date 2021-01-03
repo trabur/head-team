@@ -75,6 +75,7 @@
       if (message.error) return alert(message.reason)
       console.log('users.register :::', message)
 
+      localStorage.setItem('token', message.token)
       window.location.href = `/profile/${message.account.id}`
     })
   }
