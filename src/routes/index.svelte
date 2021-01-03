@@ -1,5 +1,5 @@
 <svelte:head>
-	<title>METAHEAP ::: channels (publish & subscribe)</title>
+	<title>channels (publish & subscribe) ::: METAHEAP</title>
 </svelte:head>
 
 <div class="wrapper">
