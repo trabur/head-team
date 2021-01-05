@@ -34,18 +34,18 @@
 	import Application from '$components/Application';
 	import Contact from '$components/Contact';
 
-	import { TYU } from 'object-relational-mapping'
+	import { ORM } from 'object-relational-mapping'
 	import Phoenix from 'phoenix'
 
 	let token = null
 
 	onMount(() => {
 		var socket = new Phoenix.Socket("wss://printedbasics.gigalixirapp.com/socket")
-		let tyu = window.tyu = new TYU(socket)
+		let orm = window.orm = new ORM(socket)
 	
-		tyu.users.all(function ({ message }) {
-			console.log('users.all :::', message)
-		})
+		// orm.users.all(function ({ message }) {
+		// 	console.log('users.all :::', message)
+		// })
 
 		token = localStorage.getItem('token')
 	})

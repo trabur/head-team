@@ -41,20 +41,23 @@
 	import Navigation from '$components/Navigation';
 	import { onMount, onDestroy } from 'svelte';
 
-	import { TYU } from 'object-relational-mapping'
+	import { ORM } from 'object-relational-mapping'
   import Phoenix from 'phoenix'
   
 	let email = '';
-	let password = '';
+  let password = '';
+  let orm = null;
+
+  onMount(() => {
+		var socket = new Phoenix.Socket("wss://printedbasics.gigalixirapp.com/socket")
+		orm = window.orm = new ORM(socket)
+  })
 
 	function auth() {
     if (email === '') return alert('Email must be defined.')
     if (password === '') return alert('Password must be defined.')
-
-		var socket = new Phoenix.Socket("wss://printedbasics.gigalixirapp.com/socket")
-		let tyu = window.tyu = new TYU(socket)
 	
-    tyu.users.login(email, password, function ({ message }) {
+    orm.users.login(email, password, function ({ message }) {
       console.log('users.login :::', message)
       if (message.error) return alert(message.reason)
 

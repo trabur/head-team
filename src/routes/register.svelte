@@ -49,13 +49,19 @@
 	import Navigation from '$components/Navigation';
 	import { onMount, onDestroy } from 'svelte';
 
-	import { TYU } from 'object-relational-mapping'
+	import { ORM } from 'object-relational-mapping'
   import Phoenix from 'phoenix'
 
 	let email = '';
 	let username = '';
 	let secretPassword = '';
 	let confirmPassword = '';
+  let orm = null;
+
+  onMount(() => {
+		var socket = new Phoenix.Socket("wss://printedbasics.gigalixirapp.com/socket")
+		orm = window.orm = new ORM(socket)
+  })
 
 	function auth() {
     if (email === '') return alert('Email must be defined.')
@@ -66,11 +72,8 @@
       alert('The value of Secret Password must be the same as the value of Confirm Password.')
       return;
     }
-
-		var socket = new Phoenix.Socket("wss://printedbasics.gigalixirapp.com/socket")
-    let tyu = window.tyu = new TYU(socket)
     
-    tyu.users.register(email, username, confirmPassword, function ({ message }) {
+    orm.users.register(email, username, confirmPassword, function ({ message }) {
       if (message.error) return alert(message.reason)
       console.log('users.register :::', message)
 
